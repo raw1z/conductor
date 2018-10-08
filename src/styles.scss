@@ -1,0 +1,128 @@
+$font-family-sans-serif: 'Nunito Sans', sans-serif;
+
+@import "../node_modules/bootstrap/scss/bootstrap";
+@import "../node_modules/bootstrap/scss/variables";
+
+body {
+  width: 100vw;
+  overflow-x: hidden;
+  background-color: $dark;
+  color: $white;
+}
+
+.header {
+  background-color: $gray-900;
+  text-align: center;
+}
+
+.new-task {
+  border-bottom: thin solid $gray-700;
+
+  .btn {
+    border-radius: 0;
+  }
+
+  form {
+    margin: 0;
+  }
+
+  input {
+    border: none;
+    background-color: transparent;
+    color: $white;
+    padding: {
+      left: 0.5rem;
+      right: 0.5rem;
+    }
+
+    &:focus {
+      outline: none;
+    }
+  }
+}
+
+.tasks {
+  margin: 0;
+  padding: 0;
+
+  .task {
+    list-style-type: none;
+    border-bottom: thin solid $gray-700;
+    height: 40px;
+    line-height: 40px;
+
+    .actions {
+      background-color: $dark;
+      transition: background-color 0.5s;
+
+      button {
+        border-radius: 0;
+        transition: color 0.25s;
+      }
+    }
+
+    .desc {
+      padding-left: 0.5rem;
+    }
+
+    &:hover {
+      .actions {
+        button {
+          color: $light;
+        }
+      }
+    }
+  }
+}
+
+.timer {
+  transition: background-color 0.5s;
+
+  &.timer-work {
+    background-color: $danger;
+  }
+
+  &.timer-pause {
+    background-color: $success;
+  }
+
+  &.timer-long-pause {
+    background-color: $primary;
+  }
+
+  .timeout {
+    text-align: center;
+  }
+
+  .task-description {
+    text-align: center;
+    background-color: transparentize($dark, 0.9);
+    padding: {
+      top: 0.5rem;
+      bottom: 0.5rem;
+    }
+  }
+
+  .timer-progress {
+    position: relative;
+    height: 315px;
+
+    .timer-progress-ring {
+      position: absolute;
+      top: 7px;
+      width: 100%;
+      text-align: center;
+
+      .progress-ring__circle {
+        transition: stroke-dashoffset 0.35s;
+        transform: rotate(-90deg);
+        transform-origin: 50% 50%;
+      }
+    }
+
+    .timeout {
+      padding-top: 100px;
+      margin: 0;
+    }
+  }
+}
