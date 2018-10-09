@@ -20882,7 +20882,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 		var dict = _n0.a;
 		return elm$core$Dict$keys(dict);
 	};
-	var author$project$Pomodoro$initialModel = { newTask: elm$core$Maybe$Nothing, selectedTaskId: 1, tasks: _List_Nil, timer: elm$core$Maybe$Nothing };
+	var author$project$Pomodoro$initialModel = { lastNewId: 0, newTask: elm$core$Maybe$Nothing, selectedTaskId: 0, tasks: _List_Nil, timer: elm$core$Maybe$Nothing };
 	var elm$core$Basics$False = { $: 'False' };
 	var elm$core$Basics$True = { $: 'True' };
 	var elm$core$Result$isOk = function elm$core$Result$isOk(result) {
@@ -21812,16 +21812,19 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 	var author$project$Pomodoro$Task = F3(function (id, description, done) {
 		return { description: description, done: done, id: id };
 	});
+	var author$project$Pomodoro$getNewTaskId = function author$project$Pomodoro$getNewTaskId(model) {
+		return model.lastNewId + 1;
+	};
 	var author$project$Pomodoro$addNewTask = function author$project$Pomodoro$addNewTask(model) {
 		var _n0 = model.newTask;
 		if (_n0.$ === 'Nothing') {
 			return model;
 		} else {
 			var task = _n0.a;
-			var newTaskId = elm$core$List$length(model.tasks) + 1;
+			var newTaskId = author$project$Pomodoro$getNewTaskId(model);
 			var newTask = _Utils_update(task, { id: newTaskId });
 			var newTasks = _Utils_ap(model.tasks, _List_fromArray([newTask]));
-			return _Utils_update(model, { newTask: elm$core$Maybe$Nothing, selectedTaskId: newTaskId, tasks: newTasks });
+			return _Utils_update(model, { lastNewId: newTaskId, newTask: elm$core$Maybe$Nothing, selectedTaskId: newTaskId, tasks: newTasks });
 		}
 	};
 	var author$project$Pomodoro$UpdateTask = function author$project$Pomodoro$UpdateTask(a) {

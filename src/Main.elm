@@ -44,6 +44,7 @@ type alias Timer =
 type alias Model =
     { tasks : List Task
     , newTask : Maybe Task
+    , lastNewId : Id
     , selectedTaskId : Id
     , timer : Maybe Timer
     }
@@ -68,7 +69,8 @@ initialModel : Model
 initialModel =
     { tasks = []
     , newTask = Nothing
-    , selectedTaskId = 1
+    , lastNewId = 0
+    , selectedTaskId = 0
     , timer = Nothing
     }
 
@@ -255,6 +257,11 @@ type Msg
     | OnKeyPressed String
 
 
+getNewTaskId : Model -> Id
+getNewTaskId model =
+    model.lastNewId + 1
+
+
 addNewTask : Model -> Model
 addNewTask model =
     case model.newTask of
@@ -264,7 +271,7 @@ addNewTask model =
         Just task ->
             let
                 newTaskId =
-                    List.length model.tasks + 1
+                    getNewTaskId model
 
                 newTask =
                     { task | id = newTaskId }
@@ -274,6 +281,7 @@ addNewTask model =
             in
             { model
                 | tasks = newTasks
+                , lastNewId = newTaskId
                 , selectedTaskId = newTaskId
                 , newTask = Nothing
             }
