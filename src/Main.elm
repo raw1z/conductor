@@ -1,10 +1,12 @@
 port module Pomodoro exposing (main)
 
 import Browser
+import Browser.Dom exposing (focus)
 import Html exposing (..)
-import Html.Attributes exposing (autofocus, class, disabled, placeholder, src, type_, value)
-import Html.Events exposing (onClick, onInput, onSubmit)
+import Html.Attributes exposing (class, disabled, href, id, placeholder, src, type_, value)
+import Html.Events exposing (onClick, onDoubleClick, onInput, onSubmit)
 import ProgressRing
+import Task
 import Time
 
 
@@ -39,7 +41,8 @@ type alias Timer =
 
 type alias Model =
     { tasks : List Task
-    , newTask : String
+    , newTask : Maybe Task
+    , selectedTaskId : Id
     , timer : Maybe Timer
     }
 
@@ -62,7 +65,8 @@ longPauseTimeout =
 initialModel : Model
 initialModel =
     { tasks = []
-    , newTask = ""
+    , newTask = Nothing
+    , selectedTaskId = 1
     , timer = Nothing
     }
 
@@ -77,8 +81,17 @@ viewHeader =
     nav [ class "header" ]
         [ div [ class "container" ]
             [ div [ class "row" ]
-                [ div [ class "col-12" ]
+                [ div [ class "col-10" ]
                     [ h1 [] [ text "Conductor" ]
+                    ]
+                , div [ class "col-2 d-flex align-items-center" ]
+                    [ a
+                        [ href "#"
+                        , id "new-task-btn"
+                        , onClick (UpdateTask "")
+                        ]
+                        [ i [ class "fa fa-plus fa-2x" ] []
+                        ]
                     ]
                 ]
             ]
@@ -87,52 +100,75 @@ viewHeader =
 
 viewNewTask : Model -> Html Msg
 viewNewTask model =
-    div [ class "new-task" ]
-        [ form [ class "d-flex", onSubmit SaveTask ]
-            [ input
-                [ type_ "text"
-                , class "flex-fill"
-                , placeholder "Add a task..."
-                , value model.newTask
-                , autofocus True
-                , onInput UpdateTask
+    case model.newTask of
+        Nothing ->
+            div [] []
+
+        Just task ->
+            div [ class "new-task" ]
+                [ form [ class "d-flex", onSubmit SaveTask ]
+                    [ input
+                        [ type_ "text"
+                        , class "flex-fill"
+                        , id "new-task-description"
+                        , placeholder "Add a task..."
+                        , value task.description
+                        , onInput UpdateTask
+                        ]
+                        []
+                    , button
+                        [ disabled (String.isEmpty task.description)
+                        , class "btn"
+                        ]
+                        [ i [ class "fa fa-check" ]
+                            []
+                        ]
+                    ]
                 ]
-                []
-            , button
-                [ disabled (String.isEmpty model.newTask)
-                , class "btn btn-dark"
-                ]
-                [ text "+" ]
-            ]
-        ]
 
 
 viewTaskActions : Task -> Html Msg
 viewTaskActions task =
-    div [ class "actions" ]
+    div [ class "actions d-flex justify-content-center align-items-center" ]
         [ button
-            [ class "btn btn-dark"
+            [ class "btn start-task-btn"
+            , onClick (UpdateTimer task)
+            ]
+            [ i [ class "fa fa-play" ] []
+            ]
+        , button
+            [ class "btn remove-task-btn"
             , onClick (RemoveTask task)
             ]
-            [ text "-" ]
+            [ i [ class "fa fa-remove" ] []
+            ]
         ]
 
 
-viewTask : Task -> Html Msg
-viewTask task =
-    li [ class "task d-flex" ]
+viewTask : Model -> Task -> Html Msg
+viewTask model task =
+    let
+        classNames =
+            if model.selectedTaskId == task.id then
+                "task d-flex active"
+
+            else
+                "task d-flex"
+    in
+    li [ class classNames ]
         [ div
             [ class "desc flex-fill"
-            , onClick (UpdateTimer task)
+            , onDoubleClick (UpdateTimer task)
+            , onClick (SelectTask task)
             ]
             [ text task.description ]
         , viewTaskActions task
         ]
 
 
-viewTaskList : List Task -> Html Msg
-viewTaskList tasks =
-    ul [ class "tasks" ] (List.map viewTask tasks)
+viewTaskList : Model -> Html Msg
+viewTaskList model =
+    ul [ class "tasks" ] (List.map (viewTask model) model.tasks)
 
 
 formatMinutesOrSeconds : Int -> String
@@ -201,7 +237,7 @@ view model =
     div [ class "app" ]
         [ viewHeader
         , viewTimer model.timer
-        , viewTaskList model.tasks
+        , viewTaskList model
         , viewNewTask model
         ]
 
@@ -211,19 +247,29 @@ type Msg
     | UpdateTask String
     | RemoveTask Task
     | UpdateTimer Task
+    | SelectTask Task
     | Tick Time.Posix
+    | FocusResult (Result Browser.Dom.Error ())
 
 
 addNewTask : Model -> Model
 addNewTask model =
-    let
-        task =
-            Task (List.length model.tasks + 1) model.newTask False
+    case model.newTask of
+        Nothing ->
+            model
 
-        newTasks =
-            model.tasks ++ [ task ]
-    in
-    { model | tasks = newTasks, newTask = "" }
+        Just task ->
+            let
+                newTask =
+                    { task | id = List.length model.tasks + 1 }
+
+                newTasks =
+                    model.tasks ++ [ task ]
+            in
+            { model
+                | tasks = newTasks
+                , newTask = Nothing
+            }
 
 
 removeTask : Model -> Task -> Model
@@ -340,8 +386,24 @@ update msg model =
         SaveTask ->
             ( addNewTask model, Cmd.none )
 
+        UpdateTask "" ->
+            let
+                task =
+                    Task 0 "" False
+            in
+            ( { model | newTask = Just task }
+            , Task.attempt FocusResult (focus "new-task-description")
+            )
+
+        FocusResult _ ->
+            ( model, Cmd.none )
+
         UpdateTask description ->
-            ( { model | newTask = description }
+            let
+                task =
+                    Task 0 description False
+            in
+            ( { model | newTask = Just task }
             , Cmd.none
             )
 
@@ -350,6 +412,9 @@ update msg model =
 
         UpdateTimer task ->
             ( updateTimer model task, Cmd.none )
+
+        SelectTask task ->
+            ( { model | selectedTaskId = task.id }, Cmd.none )
 
         Tick _ ->
             updateTimerAtTick model

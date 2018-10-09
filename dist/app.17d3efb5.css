@@ -6319,13 +6319,24 @@ body {
   color: #fff; }
 
 .header {
-  background-color: #212529;
-  text-align: center; }
+  background-color: #212529; }
+  .header #new-task-btn {
+    color: #adb5bd;
+    cursor: pointer;
+    text-decoration: none; }
+    .header #new-task-btn:hover {
+      color: #28a745; }
 
 .new-task {
   border-bottom: thin solid #495057; }
   .new-task .btn {
-    border-radius: 0; }
+    border-radius: 0;
+    background-color: transparent;
+    color: #e9ecef;
+    cursor: pointer;
+    transition: color 0.25s; }
+    .new-task .btn:hover {
+      color: #28a745; }
   .new-task form {
     margin: 0; }
   .new-task input {
@@ -6343,16 +6354,26 @@ body {
   .tasks .task {
     list-style-type: none;
     border-bottom: thin solid #495057;
+    transition: background-color 0.5s, color 0.25s;
     height: 40px;
-    line-height: 40px; }
-    .tasks .task .actions {
-      background-color: #343a40;
-      transition: background-color 0.5s; }
-      .tasks .task .actions button {
-        border-radius: 0;
-        transition: color 0.25s; }
+    line-height: 40px;
+    color: #adb5bd; }
+    .tasks .task .actions .btn {
+      background-color: transparent;
+      transition: color 0.5s;
+      color: #fff;
+      border-radius: 0;
+      border: none;
+      outline: none; }
+      .tasks .task .actions .btn.remove-task-btn:hover {
+        color: #dc3545; }
+      .tasks .task .actions .btn.start-task-btn:hover {
+        color: #ffc107; }
     .tasks .task .desc {
       padding-left: 0.5rem; }
+    .tasks .task.active {
+      background-color: #3f474e;
+      color: #e9ecef; }
     .tasks .task:hover .actions button {
       color: #f8f9fa; }
 

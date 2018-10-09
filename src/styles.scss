@@ -12,7 +12,16 @@ body {
 
 .header {
   background-color: $gray-900;
-  text-align: center;
+
+  #new-task-btn {
+    color: $gray-500;
+    cursor: pointer;
+    text-decoration: none;
+
+    &:hover {
+      color: $success;
+    }
+  }
 }
 
 .new-task {
@@ -20,6 +29,14 @@ body {
 
   .btn {
     border-radius: 0;
+    background-color: transparent;
+    color: $gray-200;
+    cursor: pointer;
+    transition: color 0.25s;
+
+    &:hover {
+      color: $success;
+    }
   }
 
   form {
@@ -48,21 +65,37 @@ body {
   .task {
     list-style-type: none;
     border-bottom: thin solid $gray-700;
+    transition: background-color 0.5s, color 0.25s;
     height: 40px;
     line-height: 40px;
+    color: $gray-500;
 
     .actions {
-      background-color: $dark;
-      transition: background-color 0.5s;
-
-      button {
+      .btn {
+        background-color: transparent;
+        transition: color 0.5s;
+        color: $white;
         border-radius: 0;
-        transition: color 0.25s;
+        border: none;
+        outline: none;
+
+        &.remove-task-btn:hover {
+          color: $danger;
+        }
+
+        &.start-task-btn:hover {
+          color: $warning;
+        }
       }
     }
 
     .desc {
       padding-left: 0.5rem;
+    }
+
+    &.active {
+      background-color: lighten($dark, 5);
+      color: $gray-200;
     }
 
     &:hover {

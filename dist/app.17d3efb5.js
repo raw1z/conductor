@@ -20478,34 +20478,6 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 		};
 	}
 
-	var _Bitwise_and = F2(function (a, b) {
-		return a & b;
-	});
-
-	var _Bitwise_or = F2(function (a, b) {
-		return a | b;
-	});
-
-	var _Bitwise_xor = F2(function (a, b) {
-		return a ^ b;
-	});
-
-	function _Bitwise_complement(a) {
-		return ~a;
-	};
-
-	var _Bitwise_shiftLeftBy = F2(function (offset, a) {
-		return a << offset;
-	});
-
-	var _Bitwise_shiftRightBy = F2(function (offset, a) {
-		return a >> offset;
-	});
-
-	var _Bitwise_shiftRightZfBy = F2(function (offset, a) {
-		return a >>> offset;
-	});
-
 	// ELEMENT
 
 
@@ -20826,6 +20798,34 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 			}
 		}));
 	}
+
+	var _Bitwise_and = F2(function (a, b) {
+		return a & b;
+	});
+
+	var _Bitwise_or = F2(function (a, b) {
+		return a | b;
+	});
+
+	var _Bitwise_xor = F2(function (a, b) {
+		return a ^ b;
+	});
+
+	function _Bitwise_complement(a) {
+		return ~a;
+	};
+
+	var _Bitwise_shiftLeftBy = F2(function (offset, a) {
+		return a << offset;
+	});
+
+	var _Bitwise_shiftRightBy = F2(function (offset, a) {
+		return a >> offset;
+	});
+
+	var _Bitwise_shiftRightZfBy = F2(function (offset, a) {
+		return a >>> offset;
+	});
 	var elm$core$Maybe$Nothing = { $: 'Nothing' };
 	var elm$core$Basics$EQ = { $: 'EQ' };
 	var elm$core$Basics$LT = { $: 'LT' };
@@ -20882,7 +20882,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 		var dict = _n0.a;
 		return elm$core$Dict$keys(dict);
 	};
-	var author$project$Pomodoro$initialModel = { newTask: '', tasks: _List_Nil, timer: elm$core$Maybe$Nothing };
+	var author$project$Pomodoro$initialModel = { newTask: elm$core$Maybe$Nothing, selectedTaskId: 1, tasks: _List_Nil, timer: elm$core$Maybe$Nothing };
 	var elm$core$Basics$False = { $: 'False' };
 	var elm$core$Basics$True = { $: 'True' };
 	var elm$core$Result$isOk = function elm$core$Result$isOk(result) {
@@ -21533,13 +21533,24 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 	var author$project$Pomodoro$subscriptions = function author$project$Pomodoro$subscriptions(model) {
 		return A2(elm$time$Time$every, 1000, author$project$Pomodoro$Tick);
 	};
+	var author$project$Pomodoro$FocusResult = function author$project$Pomodoro$FocusResult(a) {
+		return { $: 'FocusResult', a: a };
+	};
 	var author$project$Pomodoro$Task = F3(function (id, description, done) {
 		return { description: description, done: done, id: id };
 	});
 	var author$project$Pomodoro$addNewTask = function author$project$Pomodoro$addNewTask(model) {
-		var task = A3(author$project$Pomodoro$Task, elm$core$List$length(model.tasks) + 1, model.newTask, false);
-		var newTasks = _Utils_ap(model.tasks, _List_fromArray([task]));
-		return _Utils_update(model, { newTask: '', tasks: newTasks });
+		var _n0 = model.newTask;
+		if (_n0.$ === 'Nothing') {
+			return model;
+		} else {
+			var task = _n0.a;
+			var newTasks = _Utils_ap(model.tasks, _List_fromArray([task]));
+			var newTask = _Utils_update(task, {
+				id: elm$core$List$length(model.tasks) + 1
+			});
+			return _Utils_update(model, { newTask: elm$core$Maybe$Nothing, tasks: newTasks });
+		}
 	};
 	var elm$core$Basics$neq = _Utils_notEqual;
 	var elm$core$List$filter = F2(function (isGood, list) {
@@ -21649,201 +21660,6 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 			return _Utils_Tuple2(_Utils_update(model, { timer: newTimer }), cmd);
 		}
 	};
-	var author$project$Pomodoro$update = F2(function (msg, model) {
-		switch (msg.$) {
-			case 'SaveTask':
-				return _Utils_Tuple2(author$project$Pomodoro$addNewTask(model), elm$core$Platform$Cmd$none);
-			case 'UpdateTask':
-				var description = msg.a;
-				return _Utils_Tuple2(_Utils_update(model, { newTask: description }), elm$core$Platform$Cmd$none);
-			case 'RemoveTask':
-				var task = msg.a;
-				return _Utils_Tuple2(A2(author$project$Pomodoro$removeTask, model, task), elm$core$Platform$Cmd$none);
-			case 'UpdateTimer':
-				var task = msg.a;
-				return _Utils_Tuple2(A2(author$project$Pomodoro$updateTimer, model, task), elm$core$Platform$Cmd$none);
-			default:
-				return author$project$Pomodoro$updateTimerAtTick(model);
-		}
-	});
-	var elm$json$Json$Decode$map = _Json_map1;
-	var elm$json$Json$Decode$map2 = _Json_map2;
-	var elm$json$Json$Decode$succeed = _Json_succeed;
-	var elm$virtual_dom$VirtualDom$toHandlerInt = function elm$virtual_dom$VirtualDom$toHandlerInt(handler) {
-		switch (handler.$) {
-			case 'Normal':
-				return 0;
-			case 'MayStopPropagation':
-				return 1;
-			case 'MayPreventDefault':
-				return 2;
-			default:
-				return 3;
-		}
-	};
-	var elm$html$Html$div = _VirtualDom_node('div');
-	var elm$html$Html$h1 = _VirtualDom_node('h1');
-	var elm$html$Html$nav = _VirtualDom_node('nav');
-	var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
-	var elm$html$Html$text = elm$virtual_dom$VirtualDom$text;
-	var elm$html$Html$Attributes$stringProperty = F2(function (key, string) {
-		return A2(_VirtualDom_property, key, elm$json$Json$Encode$string(string));
-	});
-	var elm$html$Html$Attributes$class = elm$html$Html$Attributes$stringProperty('className');
-	var author$project$Pomodoro$viewHeader = A2(elm$html$Html$nav, _List_fromArray([elm$html$Html$Attributes$class('header')]), _List_fromArray([A2(elm$html$Html$div, _List_fromArray([elm$html$Html$Attributes$class('container')]), _List_fromArray([A2(elm$html$Html$div, _List_fromArray([elm$html$Html$Attributes$class('row')]), _List_fromArray([A2(elm$html$Html$div, _List_fromArray([elm$html$Html$Attributes$class('col-12')]), _List_fromArray([A2(elm$html$Html$h1, _List_Nil, _List_fromArray([elm$html$Html$text('Conductor')]))]))]))]))]));
-	var author$project$Pomodoro$SaveTask = { $: 'SaveTask' };
-	var author$project$Pomodoro$UpdateTask = function author$project$Pomodoro$UpdateTask(a) {
-		return { $: 'UpdateTask', a: a };
-	};
-	var elm$core$String$isEmpty = function elm$core$String$isEmpty(string) {
-		return string === '';
-	};
-	var elm$html$Html$button = _VirtualDom_node('button');
-	var elm$html$Html$form = _VirtualDom_node('form');
-	var elm$html$Html$input = _VirtualDom_node('input');
-	var elm$json$Json$Encode$bool = _Json_wrap;
-	var elm$html$Html$Attributes$boolProperty = F2(function (key, bool) {
-		return A2(_VirtualDom_property, key, elm$json$Json$Encode$bool(bool));
-	});
-	var elm$html$Html$Attributes$autofocus = elm$html$Html$Attributes$boolProperty('autofocus');
-	var elm$html$Html$Attributes$disabled = elm$html$Html$Attributes$boolProperty('disabled');
-	var elm$html$Html$Attributes$placeholder = elm$html$Html$Attributes$stringProperty('placeholder');
-	var elm$html$Html$Attributes$type_ = elm$html$Html$Attributes$stringProperty('type');
-	var elm$html$Html$Attributes$value = elm$html$Html$Attributes$stringProperty('value');
-	var elm$html$Html$Events$alwaysStop = function elm$html$Html$Events$alwaysStop(x) {
-		return _Utils_Tuple2(x, true);
-	};
-	var elm$virtual_dom$VirtualDom$MayStopPropagation = function elm$virtual_dom$VirtualDom$MayStopPropagation(a) {
-		return { $: 'MayStopPropagation', a: a };
-	};
-	var elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
-	var elm$html$Html$Events$stopPropagationOn = F2(function (event, decoder) {
-		return A2(elm$virtual_dom$VirtualDom$on, event, elm$virtual_dom$VirtualDom$MayStopPropagation(decoder));
-	});
-	var elm$json$Json$Decode$field = _Json_decodeField;
-	var elm$json$Json$Decode$at = F2(function (fields, decoder) {
-		return A3(elm$core$List$foldr, elm$json$Json$Decode$field, decoder, fields);
-	});
-	var elm$json$Json$Decode$string = _Json_decodeString;
-	var elm$html$Html$Events$targetValue = A2(elm$json$Json$Decode$at, _List_fromArray(['target', 'value']), elm$json$Json$Decode$string);
-	var elm$html$Html$Events$onInput = function elm$html$Html$Events$onInput(tagger) {
-		return A2(elm$html$Html$Events$stopPropagationOn, 'input', A2(elm$json$Json$Decode$map, elm$html$Html$Events$alwaysStop, A2(elm$json$Json$Decode$map, tagger, elm$html$Html$Events$targetValue)));
-	};
-	var elm$html$Html$Events$alwaysPreventDefault = function elm$html$Html$Events$alwaysPreventDefault(msg) {
-		return _Utils_Tuple2(msg, true);
-	};
-	var elm$virtual_dom$VirtualDom$MayPreventDefault = function elm$virtual_dom$VirtualDom$MayPreventDefault(a) {
-		return { $: 'MayPreventDefault', a: a };
-	};
-	var elm$html$Html$Events$preventDefaultOn = F2(function (event, decoder) {
-		return A2(elm$virtual_dom$VirtualDom$on, event, elm$virtual_dom$VirtualDom$MayPreventDefault(decoder));
-	});
-	var elm$html$Html$Events$onSubmit = function elm$html$Html$Events$onSubmit(msg) {
-		return A2(elm$html$Html$Events$preventDefaultOn, 'submit', A2(elm$json$Json$Decode$map, elm$html$Html$Events$alwaysPreventDefault, elm$json$Json$Decode$succeed(msg)));
-	};
-	var author$project$Pomodoro$viewNewTask = function author$project$Pomodoro$viewNewTask(model) {
-		return A2(elm$html$Html$div, _List_fromArray([elm$html$Html$Attributes$class('new-task')]), _List_fromArray([A2(elm$html$Html$form, _List_fromArray([elm$html$Html$Attributes$class('d-flex'), elm$html$Html$Events$onSubmit(author$project$Pomodoro$SaveTask)]), _List_fromArray([A2(elm$html$Html$input, _List_fromArray([elm$html$Html$Attributes$type_('text'), elm$html$Html$Attributes$class('flex-fill'), elm$html$Html$Attributes$placeholder('Add a task...'), elm$html$Html$Attributes$value(model.newTask), elm$html$Html$Attributes$autofocus(true), elm$html$Html$Events$onInput(author$project$Pomodoro$UpdateTask)]), _List_Nil), A2(elm$html$Html$button, _List_fromArray([elm$html$Html$Attributes$disabled(elm$core$String$isEmpty(model.newTask)), elm$html$Html$Attributes$class('btn btn-dark')]), _List_fromArray([elm$html$Html$text('+')]))]))]));
-	};
-	var author$project$Pomodoro$UpdateTimer = function author$project$Pomodoro$UpdateTimer(a) {
-		return { $: 'UpdateTimer', a: a };
-	};
-	var author$project$Pomodoro$RemoveTask = function author$project$Pomodoro$RemoveTask(a) {
-		return { $: 'RemoveTask', a: a };
-	};
-	var elm$virtual_dom$VirtualDom$Normal = function elm$virtual_dom$VirtualDom$Normal(a) {
-		return { $: 'Normal', a: a };
-	};
-	var elm$html$Html$Events$on = F2(function (event, decoder) {
-		return A2(elm$virtual_dom$VirtualDom$on, event, elm$virtual_dom$VirtualDom$Normal(decoder));
-	});
-	var elm$html$Html$Events$onClick = function elm$html$Html$Events$onClick(msg) {
-		return A2(elm$html$Html$Events$on, 'click', elm$json$Json$Decode$succeed(msg));
-	};
-	var author$project$Pomodoro$viewTaskActions = function author$project$Pomodoro$viewTaskActions(task) {
-		return A2(elm$html$Html$div, _List_fromArray([elm$html$Html$Attributes$class('actions')]), _List_fromArray([A2(elm$html$Html$button, _List_fromArray([elm$html$Html$Attributes$class('btn btn-dark'), elm$html$Html$Events$onClick(author$project$Pomodoro$RemoveTask(task))]), _List_fromArray([elm$html$Html$text('-')]))]));
-	};
-	var elm$html$Html$li = _VirtualDom_node('li');
-	var author$project$Pomodoro$viewTask = function author$project$Pomodoro$viewTask(task) {
-		return A2(elm$html$Html$li, _List_fromArray([elm$html$Html$Attributes$class('task d-flex')]), _List_fromArray([A2(elm$html$Html$div, _List_fromArray([elm$html$Html$Attributes$class('desc flex-fill'), elm$html$Html$Events$onClick(author$project$Pomodoro$UpdateTimer(task))]), _List_fromArray([elm$html$Html$text(task.description)])), author$project$Pomodoro$viewTaskActions(task)]));
-	};
-	var elm$html$Html$ul = _VirtualDom_node('ul');
-	var author$project$Pomodoro$viewTaskList = function author$project$Pomodoro$viewTaskList(tasks) {
-		return A2(elm$html$Html$ul, _List_fromArray([elm$html$Html$Attributes$class('tasks')]), A2(elm$core$List$map, author$project$Pomodoro$viewTask, tasks));
-	};
-	var author$project$Pomodoro$viewTimerClassNames = function author$project$Pomodoro$viewTimerClassNames(timer) {
-		var _n0 = timer.status;
-		switch (_n0.$) {
-			case 'Work':
-				return 'timer timer-work';
-			case 'Pause':
-				return 'timer timer-pause';
-			default:
-				return 'timer timer-long-pause';
-		}
-	};
-	var elm$core$String$cons = _String_cons;
-	var elm$core$String$fromChar = function elm$core$String$fromChar(_char) {
-		return A2(elm$core$String$cons, _char, '');
-	};
-	var elm$core$String$length = _String_length;
-	var elm$core$Bitwise$and = _Bitwise_and;
-	var elm$core$Bitwise$shiftRightBy = _Bitwise_shiftRightBy;
-	var elm$core$String$repeatHelp = F3(function (n, chunk, result) {
-		return n <= 0 ? result : A3(elm$core$String$repeatHelp, n >> 1, _Utils_ap(chunk, chunk), !(n & 1) ? result : _Utils_ap(result, chunk));
-	});
-	var elm$core$String$repeat = F2(function (n, chunk) {
-		return A3(elm$core$String$repeatHelp, n, chunk, '');
-	});
-	var elm$core$String$padLeft = F3(function (n, _char, string) {
-		return _Utils_ap(A2(elm$core$String$repeat, n - elm$core$String$length(string), elm$core$String$fromChar(_char)), string);
-	});
-	var author$project$Pomodoro$formatMinutesOrSeconds = function author$project$Pomodoro$formatMinutesOrSeconds(value) {
-		return A3(elm$core$String$padLeft, 2, _Utils_chr('0'), elm$core$String$fromInt(value));
-	};
-	var author$project$Pomodoro$viewTimerTimeout = function author$project$Pomodoro$viewTimerTimeout(timer) {
-		var minutes = timer.timeout / 60 | 0;
-		var seconds = timer.timeout - minutes * 60;
-		return A2(elm$html$Html$h1, _List_fromArray([elm$html$Html$Attributes$class('display-2 timeout')]), _List_fromArray([elm$html$Html$text(author$project$Pomodoro$formatMinutesOrSeconds(minutes)), elm$html$Html$text(':'), elm$html$Html$text(author$project$Pomodoro$formatMinutesOrSeconds(seconds))]));
-	};
-	var elm$core$Basics$pi = _Basics_pi;
-	var elm$core$Basics$round = _Basics_round;
-	var elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
-	var elm$svg$Svg$circle = elm$svg$Svg$trustedNode('circle');
-	var elm$svg$Svg$svg = elm$svg$Svg$trustedNode('svg');
-	var elm$svg$Svg$Attributes$class = _VirtualDom_attribute('class');
-	var elm$svg$Svg$Attributes$cx = _VirtualDom_attribute('cx');
-	var elm$svg$Svg$Attributes$cy = _VirtualDom_attribute('cy');
-	var elm$svg$Svg$Attributes$fill = _VirtualDom_attribute('fill');
-	var elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
-	var elm$svg$Svg$Attributes$r = _VirtualDom_attribute('r');
-	var elm$svg$Svg$Attributes$stroke = _VirtualDom_attribute('stroke');
-	var elm$svg$Svg$Attributes$strokeDasharray = _VirtualDom_attribute('stroke-dasharray');
-	var elm$svg$Svg$Attributes$strokeDashoffset = _VirtualDom_attribute('stroke-dashoffset');
-	var elm$svg$Svg$Attributes$strokeLinecap = _VirtualDom_attribute('stroke-linecap');
-	var elm$svg$Svg$Attributes$strokeWidth = _VirtualDom_attribute('stroke-width');
-	var elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
-	var author$project$ProgressRing$viewProgress = F3(function (radius, thickness, progress) {
-		var realRadius = radius - 2 * thickness;
-		var circumference = radius * 2 * elm$core$Basics$pi;
-		var dashArray = elm$core$String$fromInt(elm$core$Basics$round(circumference)) + (' ' + elm$core$String$fromInt(elm$core$Basics$round(circumference)));
-		var dashOffset = elm$core$Basics$round(circumference - circumference * progress);
-		return A2(elm$svg$Svg$svg, _List_fromArray([elm$svg$Svg$Attributes$width(elm$core$String$fromInt(radius * 2)), elm$svg$Svg$Attributes$height(elm$core$String$fromInt(radius * 2))]), _List_fromArray([A2(elm$svg$Svg$circle, _List_fromArray([elm$svg$Svg$Attributes$fill('transparent'), elm$svg$Svg$Attributes$stroke('white'), elm$svg$Svg$Attributes$strokeWidth('1'), elm$svg$Svg$Attributes$r(elm$core$String$fromInt(realRadius)), elm$svg$Svg$Attributes$cx(elm$core$String$fromInt(radius)), elm$svg$Svg$Attributes$cy(elm$core$String$fromInt(radius))]), _List_Nil), A2(elm$svg$Svg$circle, _List_fromArray([elm$svg$Svg$Attributes$class('progress-ring__circle'), elm$svg$Svg$Attributes$fill('transparent'), elm$svg$Svg$Attributes$stroke('white'), elm$svg$Svg$Attributes$strokeWidth(elm$core$String$fromInt(thickness)), elm$svg$Svg$Attributes$strokeLinecap('round'), elm$svg$Svg$Attributes$strokeDasharray(dashArray), elm$svg$Svg$Attributes$strokeDashoffset(elm$core$String$fromInt(dashOffset)), elm$svg$Svg$Attributes$r(elm$core$String$fromInt(realRadius)), elm$svg$Svg$Attributes$cx(elm$core$String$fromInt(radius)), elm$svg$Svg$Attributes$cy(elm$core$String$fromInt(radius))]), _List_Nil)]));
-	});
-	var author$project$Pomodoro$viewTimerProgress = function author$project$Pomodoro$viewTimerProgress(timer) {
-		var progress = (timer.initialValue - timer.timeout) / timer.initialValue;
-		return A2(elm$html$Html$div, _List_fromArray([elm$html$Html$Attributes$class('timer-progress')]), _List_fromArray([A2(elm$html$Html$div, _List_fromArray([elm$html$Html$Attributes$class('timer-progress-ring')]), _List_fromArray([A3(author$project$ProgressRing$viewProgress, 150, 6, progress)])), author$project$Pomodoro$viewTimerTimeout(timer)]));
-	};
-	var author$project$Pomodoro$viewTimer = function author$project$Pomodoro$viewTimer(timer) {
-		if (timer.$ === 'Just') {
-			var justTimer = timer.a;
-			return A2(elm$html$Html$div, _List_fromArray([elm$html$Html$Attributes$class(author$project$Pomodoro$viewTimerClassNames(justTimer))]), _List_fromArray([author$project$Pomodoro$viewTimerProgress(justTimer), A2(elm$html$Html$div, _List_fromArray([elm$html$Html$Attributes$class('task-description')]), _List_fromArray([elm$html$Html$text(justTimer.task.description)]))]));
-		} else {
-			return A2(elm$html$Html$div, _List_Nil, _List_Nil);
-		}
-	};
-	var author$project$Pomodoro$view = function author$project$Pomodoro$view(model) {
-		return A2(elm$html$Html$div, _List_fromArray([elm$html$Html$Attributes$class('app')]), _List_fromArray([author$project$Pomodoro$viewHeader, author$project$Pomodoro$viewTimer(model.timer), author$project$Pomodoro$viewTaskList(model.tasks), author$project$Pomodoro$viewNewTask(model)]));
-	};
 	var elm$browser$Browser$External = function elm$browser$Browser$External(a) {
 		return { $: 'External', a: a };
 	};
@@ -21891,6 +21707,22 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 	var elm$core$Task$perform = F2(function (toMessage, task) {
 		return elm$core$Task$command(elm$core$Task$Perform(A2(elm$core$Task$map, toMessage, task)));
 	});
+	var elm$json$Json$Decode$map = _Json_map1;
+	var elm$json$Json$Decode$map2 = _Json_map2;
+	var elm$json$Json$Decode$succeed = _Json_succeed;
+	var elm$virtual_dom$VirtualDom$toHandlerInt = function elm$virtual_dom$VirtualDom$toHandlerInt(handler) {
+		switch (handler.$) {
+			case 'Normal':
+				return 0;
+			case 'MayStopPropagation':
+				return 1;
+			case 'MayPreventDefault':
+				return 2;
+			default:
+				return 3;
+		}
+	};
+	var elm$core$String$length = _String_length;
 	var elm$core$String$slice = _String_slice;
 	var elm$core$String$dropLeft = F2(function (n, string) {
 		return n < 1 ? string : A3(elm$core$String$slice, n, elm$core$String$length(string), string);
@@ -21899,6 +21731,9 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 	var elm$url$Url$Http = { $: 'Http' };
 	var elm$url$Url$Https = { $: 'Https' };
 	var elm$core$String$indexes = _String_indexes;
+	var elm$core$String$isEmpty = function elm$core$String$isEmpty(string) {
+		return string === '';
+	};
 	var elm$core$String$left = F2(function (n, string) {
 		return n < 1 ? '' : A3(elm$core$String$slice, 0, n, string);
 	});
@@ -21972,6 +21807,220 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 	var elm$url$Url$fromString = function elm$url$Url$fromString(str) {
 		return A2(elm$core$String$startsWith, 'http://', str) ? A2(elm$url$Url$chompAfterProtocol, elm$url$Url$Http, A2(elm$core$String$dropLeft, 7, str)) : A2(elm$core$String$startsWith, 'https://', str) ? A2(elm$url$Url$chompAfterProtocol, elm$url$Url$Https, A2(elm$core$String$dropLeft, 8, str)) : elm$core$Maybe$Nothing;
 	};
+	var elm$browser$Browser$Dom$focus = _Browser_call('focus');
+	var elm$core$Task$onError = _Scheduler_onError;
+	var elm$core$Task$attempt = F2(function (resultToMessage, task) {
+		return elm$core$Task$command(elm$core$Task$Perform(A2(elm$core$Task$onError, A2(elm$core$Basics$composeL, A2(elm$core$Basics$composeL, elm$core$Task$succeed, resultToMessage), elm$core$Result$Err), A2(elm$core$Task$andThen, A2(elm$core$Basics$composeL, A2(elm$core$Basics$composeL, elm$core$Task$succeed, resultToMessage), elm$core$Result$Ok), task))));
+	});
+	var author$project$Pomodoro$update = F2(function (msg, model) {
+		switch (msg.$) {
+			case 'SaveTask':
+				return _Utils_Tuple2(author$project$Pomodoro$addNewTask(model), elm$core$Platform$Cmd$none);
+			case 'FocusResult':
+				return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+			case 'UpdateTask':
+				if (msg.a === '') {
+					var task = A3(author$project$Pomodoro$Task, 0, '', false);
+					return _Utils_Tuple2(_Utils_update(model, {
+						newTask: elm$core$Maybe$Just(task)
+					}), A2(elm$core$Task$attempt, author$project$Pomodoro$FocusResult, elm$browser$Browser$Dom$focus('new-task-description')));
+				} else {
+					var description = msg.a;
+					var task = A3(author$project$Pomodoro$Task, 0, description, false);
+					return _Utils_Tuple2(_Utils_update(model, {
+						newTask: elm$core$Maybe$Just(task)
+					}), elm$core$Platform$Cmd$none);
+				}
+			case 'RemoveTask':
+				var task = msg.a;
+				return _Utils_Tuple2(A2(author$project$Pomodoro$removeTask, model, task), elm$core$Platform$Cmd$none);
+			case 'UpdateTimer':
+				var task = msg.a;
+				return _Utils_Tuple2(A2(author$project$Pomodoro$updateTimer, model, task), elm$core$Platform$Cmd$none);
+			case 'SelectTask':
+				var task = msg.a;
+				return _Utils_Tuple2(_Utils_update(model, { selectedTaskId: task.id }), elm$core$Platform$Cmd$none);
+			default:
+				return author$project$Pomodoro$updateTimerAtTick(model);
+		}
+	});
+	var author$project$Pomodoro$UpdateTask = function author$project$Pomodoro$UpdateTask(a) {
+		return { $: 'UpdateTask', a: a };
+	};
+	var elm$html$Html$a = _VirtualDom_node('a');
+	var elm$html$Html$div = _VirtualDom_node('div');
+	var elm$html$Html$h1 = _VirtualDom_node('h1');
+	var elm$html$Html$i = _VirtualDom_node('i');
+	var elm$html$Html$nav = _VirtualDom_node('nav');
+	var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
+	var elm$html$Html$text = elm$virtual_dom$VirtualDom$text;
+	var elm$html$Html$Attributes$stringProperty = F2(function (key, string) {
+		return A2(_VirtualDom_property, key, elm$json$Json$Encode$string(string));
+	});
+	var elm$html$Html$Attributes$class = elm$html$Html$Attributes$stringProperty('className');
+	var elm$html$Html$Attributes$href = function elm$html$Html$Attributes$href(url) {
+		return A2(elm$html$Html$Attributes$stringProperty, 'href', _VirtualDom_noJavaScriptUri(url));
+	};
+	var elm$html$Html$Attributes$id = elm$html$Html$Attributes$stringProperty('id');
+	var elm$virtual_dom$VirtualDom$Normal = function elm$virtual_dom$VirtualDom$Normal(a) {
+		return { $: 'Normal', a: a };
+	};
+	var elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
+	var elm$html$Html$Events$on = F2(function (event, decoder) {
+		return A2(elm$virtual_dom$VirtualDom$on, event, elm$virtual_dom$VirtualDom$Normal(decoder));
+	});
+	var elm$html$Html$Events$onClick = function elm$html$Html$Events$onClick(msg) {
+		return A2(elm$html$Html$Events$on, 'click', elm$json$Json$Decode$succeed(msg));
+	};
+	var author$project$Pomodoro$viewHeader = A2(elm$html$Html$nav, _List_fromArray([elm$html$Html$Attributes$class('header')]), _List_fromArray([A2(elm$html$Html$div, _List_fromArray([elm$html$Html$Attributes$class('container')]), _List_fromArray([A2(elm$html$Html$div, _List_fromArray([elm$html$Html$Attributes$class('row')]), _List_fromArray([A2(elm$html$Html$div, _List_fromArray([elm$html$Html$Attributes$class('col-10')]), _List_fromArray([A2(elm$html$Html$h1, _List_Nil, _List_fromArray([elm$html$Html$text('Conductor')]))])), A2(elm$html$Html$div, _List_fromArray([elm$html$Html$Attributes$class('col-2 d-flex align-items-center')]), _List_fromArray([A2(elm$html$Html$a, _List_fromArray([elm$html$Html$Attributes$href('#'), elm$html$Html$Attributes$id('new-task-btn'), elm$html$Html$Events$onClick(author$project$Pomodoro$UpdateTask(''))]), _List_fromArray([A2(elm$html$Html$i, _List_fromArray([elm$html$Html$Attributes$class('fa fa-plus fa-2x')]), _List_Nil)]))]))]))]))]));
+	var author$project$Pomodoro$SaveTask = { $: 'SaveTask' };
+	var elm$html$Html$button = _VirtualDom_node('button');
+	var elm$html$Html$form = _VirtualDom_node('form');
+	var elm$html$Html$input = _VirtualDom_node('input');
+	var elm$json$Json$Encode$bool = _Json_wrap;
+	var elm$html$Html$Attributes$boolProperty = F2(function (key, bool) {
+		return A2(_VirtualDom_property, key, elm$json$Json$Encode$bool(bool));
+	});
+	var elm$html$Html$Attributes$disabled = elm$html$Html$Attributes$boolProperty('disabled');
+	var elm$html$Html$Attributes$placeholder = elm$html$Html$Attributes$stringProperty('placeholder');
+	var elm$html$Html$Attributes$type_ = elm$html$Html$Attributes$stringProperty('type');
+	var elm$html$Html$Attributes$value = elm$html$Html$Attributes$stringProperty('value');
+	var elm$html$Html$Events$alwaysStop = function elm$html$Html$Events$alwaysStop(x) {
+		return _Utils_Tuple2(x, true);
+	};
+	var elm$virtual_dom$VirtualDom$MayStopPropagation = function elm$virtual_dom$VirtualDom$MayStopPropagation(a) {
+		return { $: 'MayStopPropagation', a: a };
+	};
+	var elm$html$Html$Events$stopPropagationOn = F2(function (event, decoder) {
+		return A2(elm$virtual_dom$VirtualDom$on, event, elm$virtual_dom$VirtualDom$MayStopPropagation(decoder));
+	});
+	var elm$json$Json$Decode$field = _Json_decodeField;
+	var elm$json$Json$Decode$at = F2(function (fields, decoder) {
+		return A3(elm$core$List$foldr, elm$json$Json$Decode$field, decoder, fields);
+	});
+	var elm$json$Json$Decode$string = _Json_decodeString;
+	var elm$html$Html$Events$targetValue = A2(elm$json$Json$Decode$at, _List_fromArray(['target', 'value']), elm$json$Json$Decode$string);
+	var elm$html$Html$Events$onInput = function elm$html$Html$Events$onInput(tagger) {
+		return A2(elm$html$Html$Events$stopPropagationOn, 'input', A2(elm$json$Json$Decode$map, elm$html$Html$Events$alwaysStop, A2(elm$json$Json$Decode$map, tagger, elm$html$Html$Events$targetValue)));
+	};
+	var elm$html$Html$Events$alwaysPreventDefault = function elm$html$Html$Events$alwaysPreventDefault(msg) {
+		return _Utils_Tuple2(msg, true);
+	};
+	var elm$virtual_dom$VirtualDom$MayPreventDefault = function elm$virtual_dom$VirtualDom$MayPreventDefault(a) {
+		return { $: 'MayPreventDefault', a: a };
+	};
+	var elm$html$Html$Events$preventDefaultOn = F2(function (event, decoder) {
+		return A2(elm$virtual_dom$VirtualDom$on, event, elm$virtual_dom$VirtualDom$MayPreventDefault(decoder));
+	});
+	var elm$html$Html$Events$onSubmit = function elm$html$Html$Events$onSubmit(msg) {
+		return A2(elm$html$Html$Events$preventDefaultOn, 'submit', A2(elm$json$Json$Decode$map, elm$html$Html$Events$alwaysPreventDefault, elm$json$Json$Decode$succeed(msg)));
+	};
+	var author$project$Pomodoro$viewNewTask = function author$project$Pomodoro$viewNewTask(model) {
+		var _n0 = model.newTask;
+		if (_n0.$ === 'Nothing') {
+			return A2(elm$html$Html$div, _List_Nil, _List_Nil);
+		} else {
+			var task = _n0.a;
+			return A2(elm$html$Html$div, _List_fromArray([elm$html$Html$Attributes$class('new-task')]), _List_fromArray([A2(elm$html$Html$form, _List_fromArray([elm$html$Html$Attributes$class('d-flex'), elm$html$Html$Events$onSubmit(author$project$Pomodoro$SaveTask)]), _List_fromArray([A2(elm$html$Html$input, _List_fromArray([elm$html$Html$Attributes$type_('text'), elm$html$Html$Attributes$class('flex-fill'), elm$html$Html$Attributes$id('new-task-description'), elm$html$Html$Attributes$placeholder('Add a task...'), elm$html$Html$Attributes$value(task.description), elm$html$Html$Events$onInput(author$project$Pomodoro$UpdateTask)]), _List_Nil), A2(elm$html$Html$button, _List_fromArray([elm$html$Html$Attributes$disabled(elm$core$String$isEmpty(task.description)), elm$html$Html$Attributes$class('btn')]), _List_fromArray([A2(elm$html$Html$i, _List_fromArray([elm$html$Html$Attributes$class('fa fa-check')]), _List_Nil)]))]))]));
+		}
+	};
+	var author$project$Pomodoro$SelectTask = function author$project$Pomodoro$SelectTask(a) {
+		return { $: 'SelectTask', a: a };
+	};
+	var author$project$Pomodoro$UpdateTimer = function author$project$Pomodoro$UpdateTimer(a) {
+		return { $: 'UpdateTimer', a: a };
+	};
+	var author$project$Pomodoro$RemoveTask = function author$project$Pomodoro$RemoveTask(a) {
+		return { $: 'RemoveTask', a: a };
+	};
+	var author$project$Pomodoro$viewTaskActions = function author$project$Pomodoro$viewTaskActions(task) {
+		return A2(elm$html$Html$div, _List_fromArray([elm$html$Html$Attributes$class('actions d-flex justify-content-center align-items-center')]), _List_fromArray([A2(elm$html$Html$button, _List_fromArray([elm$html$Html$Attributes$class('btn start-task-btn'), elm$html$Html$Events$onClick(author$project$Pomodoro$UpdateTimer(task))]), _List_fromArray([A2(elm$html$Html$i, _List_fromArray([elm$html$Html$Attributes$class('fa fa-play')]), _List_Nil)])), A2(elm$html$Html$button, _List_fromArray([elm$html$Html$Attributes$class('btn remove-task-btn'), elm$html$Html$Events$onClick(author$project$Pomodoro$RemoveTask(task))]), _List_fromArray([A2(elm$html$Html$i, _List_fromArray([elm$html$Html$Attributes$class('fa fa-remove')]), _List_Nil)]))]));
+	};
+	var elm$html$Html$li = _VirtualDom_node('li');
+	var elm$html$Html$Events$onDoubleClick = function elm$html$Html$Events$onDoubleClick(msg) {
+		return A2(elm$html$Html$Events$on, 'dblclick', elm$json$Json$Decode$succeed(msg));
+	};
+	var author$project$Pomodoro$viewTask = F2(function (model, task) {
+		var classNames = _Utils_eq(model.selectedTaskId, task.id) ? 'task d-flex active' : 'task d-flex';
+		return A2(elm$html$Html$li, _List_fromArray([elm$html$Html$Attributes$class(classNames)]), _List_fromArray([A2(elm$html$Html$div, _List_fromArray([elm$html$Html$Attributes$class('desc flex-fill'), elm$html$Html$Events$onDoubleClick(author$project$Pomodoro$UpdateTimer(task)), elm$html$Html$Events$onClick(author$project$Pomodoro$SelectTask(task))]), _List_fromArray([elm$html$Html$text(task.description)])), author$project$Pomodoro$viewTaskActions(task)]));
+	});
+	var elm$html$Html$ul = _VirtualDom_node('ul');
+	var author$project$Pomodoro$viewTaskList = function author$project$Pomodoro$viewTaskList(model) {
+		return A2(elm$html$Html$ul, _List_fromArray([elm$html$Html$Attributes$class('tasks')]), A2(elm$core$List$map, author$project$Pomodoro$viewTask(model), model.tasks));
+	};
+	var author$project$Pomodoro$viewTimerClassNames = function author$project$Pomodoro$viewTimerClassNames(timer) {
+		var _n0 = timer.status;
+		switch (_n0.$) {
+			case 'Work':
+				return 'timer timer-work';
+			case 'Pause':
+				return 'timer timer-pause';
+			default:
+				return 'timer timer-long-pause';
+		}
+	};
+	var elm$core$String$cons = _String_cons;
+	var elm$core$String$fromChar = function elm$core$String$fromChar(_char) {
+		return A2(elm$core$String$cons, _char, '');
+	};
+	var elm$core$Bitwise$and = _Bitwise_and;
+	var elm$core$Bitwise$shiftRightBy = _Bitwise_shiftRightBy;
+	var elm$core$String$repeatHelp = F3(function (n, chunk, result) {
+		return n <= 0 ? result : A3(elm$core$String$repeatHelp, n >> 1, _Utils_ap(chunk, chunk), !(n & 1) ? result : _Utils_ap(result, chunk));
+	});
+	var elm$core$String$repeat = F2(function (n, chunk) {
+		return A3(elm$core$String$repeatHelp, n, chunk, '');
+	});
+	var elm$core$String$padLeft = F3(function (n, _char, string) {
+		return _Utils_ap(A2(elm$core$String$repeat, n - elm$core$String$length(string), elm$core$String$fromChar(_char)), string);
+	});
+	var author$project$Pomodoro$formatMinutesOrSeconds = function author$project$Pomodoro$formatMinutesOrSeconds(value) {
+		return A3(elm$core$String$padLeft, 2, _Utils_chr('0'), elm$core$String$fromInt(value));
+	};
+	var author$project$Pomodoro$viewTimerTimeout = function author$project$Pomodoro$viewTimerTimeout(timer) {
+		var minutes = timer.timeout / 60 | 0;
+		var seconds = timer.timeout - minutes * 60;
+		return A2(elm$html$Html$h1, _List_fromArray([elm$html$Html$Attributes$class('display-2 timeout')]), _List_fromArray([elm$html$Html$text(author$project$Pomodoro$formatMinutesOrSeconds(minutes)), elm$html$Html$text(':'), elm$html$Html$text(author$project$Pomodoro$formatMinutesOrSeconds(seconds))]));
+	};
+	var elm$core$Basics$pi = _Basics_pi;
+	var elm$core$Basics$round = _Basics_round;
+	var elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
+	var elm$svg$Svg$circle = elm$svg$Svg$trustedNode('circle');
+	var elm$svg$Svg$svg = elm$svg$Svg$trustedNode('svg');
+	var elm$svg$Svg$Attributes$class = _VirtualDom_attribute('class');
+	var elm$svg$Svg$Attributes$cx = _VirtualDom_attribute('cx');
+	var elm$svg$Svg$Attributes$cy = _VirtualDom_attribute('cy');
+	var elm$svg$Svg$Attributes$fill = _VirtualDom_attribute('fill');
+	var elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
+	var elm$svg$Svg$Attributes$r = _VirtualDom_attribute('r');
+	var elm$svg$Svg$Attributes$stroke = _VirtualDom_attribute('stroke');
+	var elm$svg$Svg$Attributes$strokeDasharray = _VirtualDom_attribute('stroke-dasharray');
+	var elm$svg$Svg$Attributes$strokeDashoffset = _VirtualDom_attribute('stroke-dashoffset');
+	var elm$svg$Svg$Attributes$strokeLinecap = _VirtualDom_attribute('stroke-linecap');
+	var elm$svg$Svg$Attributes$strokeWidth = _VirtualDom_attribute('stroke-width');
+	var elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
+	var author$project$ProgressRing$viewProgress = F3(function (radius, thickness, progress) {
+		var realRadius = radius - 2 * thickness;
+		var circumference = radius * 2 * elm$core$Basics$pi;
+		var dashArray = elm$core$String$fromInt(elm$core$Basics$round(circumference)) + (' ' + elm$core$String$fromInt(elm$core$Basics$round(circumference)));
+		var dashOffset = elm$core$Basics$round(circumference - circumference * progress);
+		return A2(elm$svg$Svg$svg, _List_fromArray([elm$svg$Svg$Attributes$width(elm$core$String$fromInt(radius * 2)), elm$svg$Svg$Attributes$height(elm$core$String$fromInt(radius * 2))]), _List_fromArray([A2(elm$svg$Svg$circle, _List_fromArray([elm$svg$Svg$Attributes$fill('transparent'), elm$svg$Svg$Attributes$stroke('white'), elm$svg$Svg$Attributes$strokeWidth('1'), elm$svg$Svg$Attributes$r(elm$core$String$fromInt(realRadius)), elm$svg$Svg$Attributes$cx(elm$core$String$fromInt(radius)), elm$svg$Svg$Attributes$cy(elm$core$String$fromInt(radius))]), _List_Nil), A2(elm$svg$Svg$circle, _List_fromArray([elm$svg$Svg$Attributes$class('progress-ring__circle'), elm$svg$Svg$Attributes$fill('transparent'), elm$svg$Svg$Attributes$stroke('white'), elm$svg$Svg$Attributes$strokeWidth(elm$core$String$fromInt(thickness)), elm$svg$Svg$Attributes$strokeLinecap('round'), elm$svg$Svg$Attributes$strokeDasharray(dashArray), elm$svg$Svg$Attributes$strokeDashoffset(elm$core$String$fromInt(dashOffset)), elm$svg$Svg$Attributes$r(elm$core$String$fromInt(realRadius)), elm$svg$Svg$Attributes$cx(elm$core$String$fromInt(radius)), elm$svg$Svg$Attributes$cy(elm$core$String$fromInt(radius))]), _List_Nil)]));
+	});
+	var author$project$Pomodoro$viewTimerProgress = function author$project$Pomodoro$viewTimerProgress(timer) {
+		var progress = (timer.initialValue - timer.timeout) / timer.initialValue;
+		return A2(elm$html$Html$div, _List_fromArray([elm$html$Html$Attributes$class('timer-progress')]), _List_fromArray([A2(elm$html$Html$div, _List_fromArray([elm$html$Html$Attributes$class('timer-progress-ring')]), _List_fromArray([A3(author$project$ProgressRing$viewProgress, 150, 6, progress)])), author$project$Pomodoro$viewTimerTimeout(timer)]));
+	};
+	var author$project$Pomodoro$viewTimer = function author$project$Pomodoro$viewTimer(timer) {
+		if (timer.$ === 'Just') {
+			var justTimer = timer.a;
+			return A2(elm$html$Html$div, _List_fromArray([elm$html$Html$Attributes$class(author$project$Pomodoro$viewTimerClassNames(justTimer))]), _List_fromArray([author$project$Pomodoro$viewTimerProgress(justTimer), A2(elm$html$Html$div, _List_fromArray([elm$html$Html$Attributes$class('task-description')]), _List_fromArray([elm$html$Html$text(justTimer.task.description)]))]));
+		} else {
+			return A2(elm$html$Html$div, _List_Nil, _List_Nil);
+		}
+	};
+	var author$project$Pomodoro$view = function author$project$Pomodoro$view(model) {
+		return A2(elm$html$Html$div, _List_fromArray([elm$html$Html$Attributes$class('app')]), _List_fromArray([author$project$Pomodoro$viewHeader, author$project$Pomodoro$viewTimer(model.timer), author$project$Pomodoro$viewTaskList(model), author$project$Pomodoro$viewNewTask(model)]));
+	};
 	var elm$browser$Browser$element = _Browser_element;
 	var author$project$Pomodoro$main = elm$browser$Browser$element({ init: author$project$Pomodoro$init, subscriptions: author$project$Pomodoro$subscriptions, update: author$project$Pomodoro$update, view: author$project$Pomodoro$view });
 	_Platform_export({ 'Pomodoro': { 'init': author$project$Pomodoro$main(elm$json$Json$Decode$succeed(_Utils_Tuple0))(0) } });
@@ -22038,7 +22087,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = '' || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + '54982' + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + '52973' + '/');
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
 

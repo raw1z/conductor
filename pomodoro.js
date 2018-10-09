@@ -3898,43 +3898,6 @@ function _VirtualDom_dekey(keyedNode)
 }
 
 
-var _Bitwise_and = F2(function(a, b)
-{
-	return a & b;
-});
-
-var _Bitwise_or = F2(function(a, b)
-{
-	return a | b;
-});
-
-var _Bitwise_xor = F2(function(a, b)
-{
-	return a ^ b;
-});
-
-function _Bitwise_complement(a)
-{
-	return ~a;
-};
-
-var _Bitwise_shiftLeftBy = F2(function(offset, a)
-{
-	return a << offset;
-});
-
-var _Bitwise_shiftRightBy = F2(function(offset, a)
-{
-	return a >> offset;
-});
-
-var _Bitwise_shiftRightZfBy = F2(function(offset, a)
-{
-	return a >>> offset;
-});
-
-
-
 
 // ELEMENT
 
@@ -4368,6 +4331,43 @@ function _Browser_load(url)
 		}
 	}));
 }
+
+
+
+var _Bitwise_and = F2(function(a, b)
+{
+	return a & b;
+});
+
+var _Bitwise_or = F2(function(a, b)
+{
+	return a | b;
+});
+
+var _Bitwise_xor = F2(function(a, b)
+{
+	return a ^ b;
+});
+
+function _Bitwise_complement(a)
+{
+	return ~a;
+};
+
+var _Bitwise_shiftLeftBy = F2(function(offset, a)
+{
+	return a << offset;
+});
+
+var _Bitwise_shiftRightBy = F2(function(offset, a)
+{
+	return a >> offset;
+});
+
+var _Bitwise_shiftRightZfBy = F2(function(offset, a)
+{
+	return a >>> offset;
+});
 var elm$core$Maybe$Nothing = {$: 'Nothing'};
 var elm$core$Basics$EQ = {$: 'EQ'};
 var elm$core$Basics$LT = {$: 'LT'};
@@ -4449,7 +4449,7 @@ var elm$core$Set$toList = function (_n0) {
 	var dict = _n0.a;
 	return elm$core$Dict$keys(dict);
 };
-var author$project$Pomodoro$initialModel = {newTask: '', tasks: _List_Nil, timer: elm$core$Maybe$Nothing};
+var author$project$Pomodoro$initialModel = {newTask: elm$core$Maybe$Nothing, selectedTaskId: 1, tasks: _List_Nil, timer: elm$core$Maybe$Nothing};
 var elm$core$Basics$False = {$: 'False'};
 var elm$core$Basics$True = {$: 'True'};
 var elm$core$Result$isOk = function (result) {
@@ -5367,23 +5367,32 @@ var elm$time$Time$every = F2(
 var author$project$Pomodoro$subscriptions = function (model) {
 	return A2(elm$time$Time$every, 1000, author$project$Pomodoro$Tick);
 };
+var author$project$Pomodoro$FocusResult = function (a) {
+	return {$: 'FocusResult', a: a};
+};
 var author$project$Pomodoro$Task = F3(
 	function (id, description, done) {
 		return {description: description, done: done, id: id};
 	});
 var author$project$Pomodoro$addNewTask = function (model) {
-	var task = A3(
-		author$project$Pomodoro$Task,
-		elm$core$List$length(model.tasks) + 1,
-		model.newTask,
-		false);
-	var newTasks = _Utils_ap(
-		model.tasks,
-		_List_fromArray(
-			[task]));
-	return _Utils_update(
-		model,
-		{newTask: '', tasks: newTasks});
+	var _n0 = model.newTask;
+	if (_n0.$ === 'Nothing') {
+		return model;
+	} else {
+		var task = _n0.a;
+		var newTasks = _Utils_ap(
+			model.tasks,
+			_List_fromArray(
+				[task]));
+		var newTask = _Utils_update(
+			task,
+			{
+				id: elm$core$List$length(model.tasks) + 1
+			});
+		return _Utils_update(
+			model,
+			{newTask: elm$core$Maybe$Nothing, tasks: newTasks});
+	}
 };
 var elm$core$Basics$neq = _Utils_notEqual;
 var elm$core$List$filter = F2(
@@ -5535,33 +5544,77 @@ var author$project$Pomodoro$updateTimerAtTick = function (model) {
 			cmd);
 	}
 };
-var author$project$Pomodoro$update = F2(
-	function (msg, model) {
-		switch (msg.$) {
-			case 'SaveTask':
-				return _Utils_Tuple2(
-					author$project$Pomodoro$addNewTask(model),
-					elm$core$Platform$Cmd$none);
-			case 'UpdateTask':
-				var description = msg.a;
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{newTask: description}),
-					elm$core$Platform$Cmd$none);
-			case 'RemoveTask':
-				var task = msg.a;
-				return _Utils_Tuple2(
-					A2(author$project$Pomodoro$removeTask, model, task),
-					elm$core$Platform$Cmd$none);
-			case 'UpdateTimer':
-				var task = msg.a;
-				return _Utils_Tuple2(
-					A2(author$project$Pomodoro$updateTimer, model, task),
-					elm$core$Platform$Cmd$none);
-			default:
-				return author$project$Pomodoro$updateTimerAtTick(model);
-		}
+var elm$browser$Browser$External = function (a) {
+	return {$: 'External', a: a};
+};
+var elm$browser$Browser$Internal = function (a) {
+	return {$: 'Internal', a: a};
+};
+var elm$browser$Browser$Dom$NotFound = function (a) {
+	return {$: 'NotFound', a: a};
+};
+var elm$core$Basics$never = function (_n0) {
+	never:
+	while (true) {
+		var nvr = _n0.a;
+		var $temp$_n0 = nvr;
+		_n0 = $temp$_n0;
+		continue never;
+	}
+};
+var elm$core$Task$Perform = function (a) {
+	return {$: 'Perform', a: a};
+};
+var elm$core$Task$init = elm$core$Task$succeed(_Utils_Tuple0);
+var elm$core$Task$map = F2(
+	function (func, taskA) {
+		return A2(
+			elm$core$Task$andThen,
+			function (a) {
+				return elm$core$Task$succeed(
+					func(a));
+			},
+			taskA);
+	});
+var elm$core$Task$spawnCmd = F2(
+	function (router, _n0) {
+		var task = _n0.a;
+		return _Scheduler_spawn(
+			A2(
+				elm$core$Task$andThen,
+				elm$core$Platform$sendToApp(router),
+				task));
+	});
+var elm$core$Task$onEffects = F3(
+	function (router, commands, state) {
+		return A2(
+			elm$core$Task$map,
+			function (_n0) {
+				return _Utils_Tuple0;
+			},
+			elm$core$Task$sequence(
+				A2(
+					elm$core$List$map,
+					elm$core$Task$spawnCmd(router),
+					commands)));
+	});
+var elm$core$Task$onSelfMsg = F3(
+	function (_n0, _n1, _n2) {
+		return elm$core$Task$succeed(_Utils_Tuple0);
+	});
+var elm$core$Task$cmdMap = F2(
+	function (tagger, _n0) {
+		var task = _n0.a;
+		return elm$core$Task$Perform(
+			A2(elm$core$Task$map, tagger, task));
+	});
+_Platform_effectManagers['Task'] = _Platform_createManager(elm$core$Task$init, elm$core$Task$onEffects, elm$core$Task$onSelfMsg, elm$core$Task$cmdMap);
+var elm$core$Task$command = _Platform_leaf('Task');
+var elm$core$Task$perform = F2(
+	function (toMessage, task) {
+		return elm$core$Task$command(
+			elm$core$Task$Perform(
+				A2(elm$core$Task$map, toMessage, task)));
 	});
 var elm$json$Json$Decode$map = _Json_map1;
 var elm$json$Json$Decode$map2 = _Json_map2;
@@ -5578,8 +5631,216 @@ var elm$virtual_dom$VirtualDom$toHandlerInt = function (handler) {
 			return 3;
 	}
 };
+var elm$core$String$length = _String_length;
+var elm$core$String$slice = _String_slice;
+var elm$core$String$dropLeft = F2(
+	function (n, string) {
+		return (n < 1) ? string : A3(
+			elm$core$String$slice,
+			n,
+			elm$core$String$length(string),
+			string);
+	});
+var elm$core$String$startsWith = _String_startsWith;
+var elm$url$Url$Http = {$: 'Http'};
+var elm$url$Url$Https = {$: 'Https'};
+var elm$core$String$indexes = _String_indexes;
+var elm$core$String$isEmpty = function (string) {
+	return string === '';
+};
+var elm$core$String$left = F2(
+	function (n, string) {
+		return (n < 1) ? '' : A3(elm$core$String$slice, 0, n, string);
+	});
+var elm$core$String$contains = _String_contains;
+var elm$core$String$toInt = _String_toInt;
+var elm$url$Url$Url = F6(
+	function (protocol, host, port_, path, query, fragment) {
+		return {fragment: fragment, host: host, path: path, port_: port_, protocol: protocol, query: query};
+	});
+var elm$url$Url$chompBeforePath = F5(
+	function (protocol, path, params, frag, str) {
+		if (elm$core$String$isEmpty(str) || A2(elm$core$String$contains, '@', str)) {
+			return elm$core$Maybe$Nothing;
+		} else {
+			var _n0 = A2(elm$core$String$indexes, ':', str);
+			if (!_n0.b) {
+				return elm$core$Maybe$Just(
+					A6(elm$url$Url$Url, protocol, str, elm$core$Maybe$Nothing, path, params, frag));
+			} else {
+				if (!_n0.b.b) {
+					var i = _n0.a;
+					var _n1 = elm$core$String$toInt(
+						A2(elm$core$String$dropLeft, i + 1, str));
+					if (_n1.$ === 'Nothing') {
+						return elm$core$Maybe$Nothing;
+					} else {
+						var port_ = _n1;
+						return elm$core$Maybe$Just(
+							A6(
+								elm$url$Url$Url,
+								protocol,
+								A2(elm$core$String$left, i, str),
+								port_,
+								path,
+								params,
+								frag));
+					}
+				} else {
+					return elm$core$Maybe$Nothing;
+				}
+			}
+		}
+	});
+var elm$url$Url$chompBeforeQuery = F4(
+	function (protocol, params, frag, str) {
+		if (elm$core$String$isEmpty(str)) {
+			return elm$core$Maybe$Nothing;
+		} else {
+			var _n0 = A2(elm$core$String$indexes, '/', str);
+			if (!_n0.b) {
+				return A5(elm$url$Url$chompBeforePath, protocol, '/', params, frag, str);
+			} else {
+				var i = _n0.a;
+				return A5(
+					elm$url$Url$chompBeforePath,
+					protocol,
+					A2(elm$core$String$dropLeft, i, str),
+					params,
+					frag,
+					A2(elm$core$String$left, i, str));
+			}
+		}
+	});
+var elm$url$Url$chompBeforeFragment = F3(
+	function (protocol, frag, str) {
+		if (elm$core$String$isEmpty(str)) {
+			return elm$core$Maybe$Nothing;
+		} else {
+			var _n0 = A2(elm$core$String$indexes, '?', str);
+			if (!_n0.b) {
+				return A4(elm$url$Url$chompBeforeQuery, protocol, elm$core$Maybe$Nothing, frag, str);
+			} else {
+				var i = _n0.a;
+				return A4(
+					elm$url$Url$chompBeforeQuery,
+					protocol,
+					elm$core$Maybe$Just(
+						A2(elm$core$String$dropLeft, i + 1, str)),
+					frag,
+					A2(elm$core$String$left, i, str));
+			}
+		}
+	});
+var elm$url$Url$chompAfterProtocol = F2(
+	function (protocol, str) {
+		if (elm$core$String$isEmpty(str)) {
+			return elm$core$Maybe$Nothing;
+		} else {
+			var _n0 = A2(elm$core$String$indexes, '#', str);
+			if (!_n0.b) {
+				return A3(elm$url$Url$chompBeforeFragment, protocol, elm$core$Maybe$Nothing, str);
+			} else {
+				var i = _n0.a;
+				return A3(
+					elm$url$Url$chompBeforeFragment,
+					protocol,
+					elm$core$Maybe$Just(
+						A2(elm$core$String$dropLeft, i + 1, str)),
+					A2(elm$core$String$left, i, str));
+			}
+		}
+	});
+var elm$url$Url$fromString = function (str) {
+	return A2(elm$core$String$startsWith, 'http://', str) ? A2(
+		elm$url$Url$chompAfterProtocol,
+		elm$url$Url$Http,
+		A2(elm$core$String$dropLeft, 7, str)) : (A2(elm$core$String$startsWith, 'https://', str) ? A2(
+		elm$url$Url$chompAfterProtocol,
+		elm$url$Url$Https,
+		A2(elm$core$String$dropLeft, 8, str)) : elm$core$Maybe$Nothing);
+};
+var elm$browser$Browser$Dom$focus = _Browser_call('focus');
+var elm$core$Task$onError = _Scheduler_onError;
+var elm$core$Task$attempt = F2(
+	function (resultToMessage, task) {
+		return elm$core$Task$command(
+			elm$core$Task$Perform(
+				A2(
+					elm$core$Task$onError,
+					A2(
+						elm$core$Basics$composeL,
+						A2(elm$core$Basics$composeL, elm$core$Task$succeed, resultToMessage),
+						elm$core$Result$Err),
+					A2(
+						elm$core$Task$andThen,
+						A2(
+							elm$core$Basics$composeL,
+							A2(elm$core$Basics$composeL, elm$core$Task$succeed, resultToMessage),
+							elm$core$Result$Ok),
+						task))));
+	});
+var author$project$Pomodoro$update = F2(
+	function (msg, model) {
+		switch (msg.$) {
+			case 'SaveTask':
+				return _Utils_Tuple2(
+					author$project$Pomodoro$addNewTask(model),
+					elm$core$Platform$Cmd$none);
+			case 'FocusResult':
+				return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+			case 'UpdateTask':
+				if (msg.a === '') {
+					var task = A3(author$project$Pomodoro$Task, 0, '', false);
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{
+								newTask: elm$core$Maybe$Just(task)
+							}),
+						A2(
+							elm$core$Task$attempt,
+							author$project$Pomodoro$FocusResult,
+							elm$browser$Browser$Dom$focus('new-task-description')));
+				} else {
+					var description = msg.a;
+					var task = A3(author$project$Pomodoro$Task, 0, description, false);
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{
+								newTask: elm$core$Maybe$Just(task)
+							}),
+						elm$core$Platform$Cmd$none);
+				}
+			case 'RemoveTask':
+				var task = msg.a;
+				return _Utils_Tuple2(
+					A2(author$project$Pomodoro$removeTask, model, task),
+					elm$core$Platform$Cmd$none);
+			case 'UpdateTimer':
+				var task = msg.a;
+				return _Utils_Tuple2(
+					A2(author$project$Pomodoro$updateTimer, model, task),
+					elm$core$Platform$Cmd$none);
+			case 'SelectTask':
+				var task = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{selectedTaskId: task.id}),
+					elm$core$Platform$Cmd$none);
+			default:
+				return author$project$Pomodoro$updateTimerAtTick(model);
+		}
+	});
+var author$project$Pomodoro$UpdateTask = function (a) {
+	return {$: 'UpdateTask', a: a};
+};
+var elm$html$Html$a = _VirtualDom_node('a');
 var elm$html$Html$div = _VirtualDom_node('div');
 var elm$html$Html$h1 = _VirtualDom_node('h1');
+var elm$html$Html$i = _VirtualDom_node('i');
 var elm$html$Html$nav = _VirtualDom_node('nav');
 var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var elm$html$Html$text = elm$virtual_dom$VirtualDom$text;
@@ -5591,6 +5852,30 @@ var elm$html$Html$Attributes$stringProperty = F2(
 			elm$json$Json$Encode$string(string));
 	});
 var elm$html$Html$Attributes$class = elm$html$Html$Attributes$stringProperty('className');
+var elm$html$Html$Attributes$href = function (url) {
+	return A2(
+		elm$html$Html$Attributes$stringProperty,
+		'href',
+		_VirtualDom_noJavaScriptUri(url));
+};
+var elm$html$Html$Attributes$id = elm$html$Html$Attributes$stringProperty('id');
+var elm$virtual_dom$VirtualDom$Normal = function (a) {
+	return {$: 'Normal', a: a};
+};
+var elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
+var elm$html$Html$Events$on = F2(
+	function (event, decoder) {
+		return A2(
+			elm$virtual_dom$VirtualDom$on,
+			event,
+			elm$virtual_dom$VirtualDom$Normal(decoder));
+	});
+var elm$html$Html$Events$onClick = function (msg) {
+	return A2(
+		elm$html$Html$Events$on,
+		'click',
+		elm$json$Json$Decode$succeed(msg));
+};
 var author$project$Pomodoro$viewHeader = A2(
 	elm$html$Html$nav,
 	_List_fromArray(
@@ -5619,7 +5904,7 @@ var author$project$Pomodoro$viewHeader = A2(
 							elm$html$Html$div,
 							_List_fromArray(
 								[
-									elm$html$Html$Attributes$class('col-12')
+									elm$html$Html$Attributes$class('col-10')
 								]),
 							_List_fromArray(
 								[
@@ -5630,17 +5915,39 @@ var author$project$Pomodoro$viewHeader = A2(
 										[
 											elm$html$Html$text('Conductor')
 										]))
+								])),
+							A2(
+							elm$html$Html$div,
+							_List_fromArray(
+								[
+									elm$html$Html$Attributes$class('col-2 d-flex align-items-center')
+								]),
+							_List_fromArray(
+								[
+									A2(
+									elm$html$Html$a,
+									_List_fromArray(
+										[
+											elm$html$Html$Attributes$href('#'),
+											elm$html$Html$Attributes$id('new-task-btn'),
+											elm$html$Html$Events$onClick(
+											author$project$Pomodoro$UpdateTask(''))
+										]),
+									_List_fromArray(
+										[
+											A2(
+											elm$html$Html$i,
+											_List_fromArray(
+												[
+													elm$html$Html$Attributes$class('fa fa-plus fa-2x')
+												]),
+											_List_Nil)
+										]))
 								]))
 						]))
 				]))
 		]));
 var author$project$Pomodoro$SaveTask = {$: 'SaveTask'};
-var author$project$Pomodoro$UpdateTask = function (a) {
-	return {$: 'UpdateTask', a: a};
-};
-var elm$core$String$isEmpty = function (string) {
-	return string === '';
-};
 var elm$html$Html$button = _VirtualDom_node('button');
 var elm$html$Html$form = _VirtualDom_node('form');
 var elm$html$Html$input = _VirtualDom_node('input');
@@ -5652,7 +5959,6 @@ var elm$html$Html$Attributes$boolProperty = F2(
 			key,
 			elm$json$Json$Encode$bool(bool));
 	});
-var elm$html$Html$Attributes$autofocus = elm$html$Html$Attributes$boolProperty('autofocus');
 var elm$html$Html$Attributes$disabled = elm$html$Html$Attributes$boolProperty('disabled');
 var elm$html$Html$Attributes$placeholder = elm$html$Html$Attributes$stringProperty('placeholder');
 var elm$html$Html$Attributes$type_ = elm$html$Html$Attributes$stringProperty('type');
@@ -5663,7 +5969,6 @@ var elm$html$Html$Events$alwaysStop = function (x) {
 var elm$virtual_dom$VirtualDom$MayStopPropagation = function (a) {
 	return {$: 'MayStopPropagation', a: a};
 };
-var elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
 var elm$html$Html$Events$stopPropagationOn = F2(
 	function (event, decoder) {
 		return A2(
@@ -5714,49 +6019,64 @@ var elm$html$Html$Events$onSubmit = function (msg) {
 			elm$json$Json$Decode$succeed(msg)));
 };
 var author$project$Pomodoro$viewNewTask = function (model) {
-	return A2(
-		elm$html$Html$div,
-		_List_fromArray(
-			[
-				elm$html$Html$Attributes$class('new-task')
-			]),
-		_List_fromArray(
-			[
-				A2(
-				elm$html$Html$form,
-				_List_fromArray(
-					[
-						elm$html$Html$Attributes$class('d-flex'),
-						elm$html$Html$Events$onSubmit(author$project$Pomodoro$SaveTask)
-					]),
-				_List_fromArray(
-					[
-						A2(
-						elm$html$Html$input,
-						_List_fromArray(
-							[
-								elm$html$Html$Attributes$type_('text'),
-								elm$html$Html$Attributes$class('flex-fill'),
-								elm$html$Html$Attributes$placeholder('Add a task...'),
-								elm$html$Html$Attributes$value(model.newTask),
-								elm$html$Html$Attributes$autofocus(true),
-								elm$html$Html$Events$onInput(author$project$Pomodoro$UpdateTask)
-							]),
-						_List_Nil),
-						A2(
-						elm$html$Html$button,
-						_List_fromArray(
-							[
-								elm$html$Html$Attributes$disabled(
-								elm$core$String$isEmpty(model.newTask)),
-								elm$html$Html$Attributes$class('btn btn-dark')
-							]),
-						_List_fromArray(
-							[
-								elm$html$Html$text('+')
-							]))
-					]))
-			]));
+	var _n0 = model.newTask;
+	if (_n0.$ === 'Nothing') {
+		return A2(elm$html$Html$div, _List_Nil, _List_Nil);
+	} else {
+		var task = _n0.a;
+		return A2(
+			elm$html$Html$div,
+			_List_fromArray(
+				[
+					elm$html$Html$Attributes$class('new-task')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					elm$html$Html$form,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$class('d-flex'),
+							elm$html$Html$Events$onSubmit(author$project$Pomodoro$SaveTask)
+						]),
+					_List_fromArray(
+						[
+							A2(
+							elm$html$Html$input,
+							_List_fromArray(
+								[
+									elm$html$Html$Attributes$type_('text'),
+									elm$html$Html$Attributes$class('flex-fill'),
+									elm$html$Html$Attributes$id('new-task-description'),
+									elm$html$Html$Attributes$placeholder('Add a task...'),
+									elm$html$Html$Attributes$value(task.description),
+									elm$html$Html$Events$onInput(author$project$Pomodoro$UpdateTask)
+								]),
+							_List_Nil),
+							A2(
+							elm$html$Html$button,
+							_List_fromArray(
+								[
+									elm$html$Html$Attributes$disabled(
+									elm$core$String$isEmpty(task.description)),
+									elm$html$Html$Attributes$class('btn')
+								]),
+							_List_fromArray(
+								[
+									A2(
+									elm$html$Html$i,
+									_List_fromArray(
+										[
+											elm$html$Html$Attributes$class('fa fa-check')
+										]),
+									_List_Nil)
+								]))
+						]))
+				]));
+	}
+};
+var author$project$Pomodoro$SelectTask = function (a) {
+	return {$: 'SelectTask', a: a};
 };
 var author$project$Pomodoro$UpdateTimer = function (a) {
 	return {$: 'UpdateTimer', a: a};
@@ -5764,28 +6084,12 @@ var author$project$Pomodoro$UpdateTimer = function (a) {
 var author$project$Pomodoro$RemoveTask = function (a) {
 	return {$: 'RemoveTask', a: a};
 };
-var elm$virtual_dom$VirtualDom$Normal = function (a) {
-	return {$: 'Normal', a: a};
-};
-var elm$html$Html$Events$on = F2(
-	function (event, decoder) {
-		return A2(
-			elm$virtual_dom$VirtualDom$on,
-			event,
-			elm$virtual_dom$VirtualDom$Normal(decoder));
-	});
-var elm$html$Html$Events$onClick = function (msg) {
-	return A2(
-		elm$html$Html$Events$on,
-		'click',
-		elm$json$Json$Decode$succeed(msg));
-};
 var author$project$Pomodoro$viewTaskActions = function (task) {
 	return A2(
 		elm$html$Html$div,
 		_List_fromArray(
 			[
-				elm$html$Html$Attributes$class('actions')
+				elm$html$Html$Attributes$class('actions d-flex justify-content-center align-items-center')
 			]),
 		_List_fromArray(
 			[
@@ -5793,50 +6097,87 @@ var author$project$Pomodoro$viewTaskActions = function (task) {
 				elm$html$Html$button,
 				_List_fromArray(
 					[
-						elm$html$Html$Attributes$class('btn btn-dark'),
-						elm$html$Html$Events$onClick(
-						author$project$Pomodoro$RemoveTask(task))
-					]),
-				_List_fromArray(
-					[
-						elm$html$Html$text('-')
-					]))
-			]));
-};
-var elm$html$Html$li = _VirtualDom_node('li');
-var author$project$Pomodoro$viewTask = function (task) {
-	return A2(
-		elm$html$Html$li,
-		_List_fromArray(
-			[
-				elm$html$Html$Attributes$class('task d-flex')
-			]),
-		_List_fromArray(
-			[
-				A2(
-				elm$html$Html$div,
-				_List_fromArray(
-					[
-						elm$html$Html$Attributes$class('desc flex-fill'),
+						elm$html$Html$Attributes$class('btn start-task-btn'),
 						elm$html$Html$Events$onClick(
 						author$project$Pomodoro$UpdateTimer(task))
 					]),
 				_List_fromArray(
 					[
-						elm$html$Html$text(task.description)
+						A2(
+						elm$html$Html$i,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$class('fa fa-play')
+							]),
+						_List_Nil)
 					])),
-				author$project$Pomodoro$viewTaskActions(task)
+				A2(
+				elm$html$Html$button,
+				_List_fromArray(
+					[
+						elm$html$Html$Attributes$class('btn remove-task-btn'),
+						elm$html$Html$Events$onClick(
+						author$project$Pomodoro$RemoveTask(task))
+					]),
+				_List_fromArray(
+					[
+						A2(
+						elm$html$Html$i,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$class('fa fa-remove')
+							]),
+						_List_Nil)
+					]))
 			]));
 };
+var elm$html$Html$li = _VirtualDom_node('li');
+var elm$html$Html$Events$onDoubleClick = function (msg) {
+	return A2(
+		elm$html$Html$Events$on,
+		'dblclick',
+		elm$json$Json$Decode$succeed(msg));
+};
+var author$project$Pomodoro$viewTask = F2(
+	function (model, task) {
+		var classNames = _Utils_eq(model.selectedTaskId, task.id) ? 'task d-flex active' : 'task d-flex';
+		return A2(
+			elm$html$Html$li,
+			_List_fromArray(
+				[
+					elm$html$Html$Attributes$class(classNames)
+				]),
+			_List_fromArray(
+				[
+					A2(
+					elm$html$Html$div,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$class('desc flex-fill'),
+							elm$html$Html$Events$onDoubleClick(
+							author$project$Pomodoro$UpdateTimer(task)),
+							elm$html$Html$Events$onClick(
+							author$project$Pomodoro$SelectTask(task))
+						]),
+					_List_fromArray(
+						[
+							elm$html$Html$text(task.description)
+						])),
+					author$project$Pomodoro$viewTaskActions(task)
+				]));
+	});
 var elm$html$Html$ul = _VirtualDom_node('ul');
-var author$project$Pomodoro$viewTaskList = function (tasks) {
+var author$project$Pomodoro$viewTaskList = function (model) {
 	return A2(
 		elm$html$Html$ul,
 		_List_fromArray(
 			[
 				elm$html$Html$Attributes$class('tasks')
 			]),
-		A2(elm$core$List$map, author$project$Pomodoro$viewTask, tasks));
+		A2(
+			elm$core$List$map,
+			author$project$Pomodoro$viewTask(model),
+			model.tasks));
 };
 var author$project$Pomodoro$viewTimerClassNames = function (timer) {
 	var _n0 = timer.status;
@@ -5853,7 +6194,6 @@ var elm$core$String$cons = _String_cons;
 var elm$core$String$fromChar = function (_char) {
 	return A2(elm$core$String$cons, _char, '');
 };
-var elm$core$String$length = _String_length;
 var elm$core$Bitwise$and = _Bitwise_and;
 var elm$core$Bitwise$shiftRightBy = _Bitwise_shiftRightBy;
 var elm$core$String$repeatHelp = F3(
@@ -6038,206 +6378,9 @@ var author$project$Pomodoro$view = function (model) {
 			[
 				author$project$Pomodoro$viewHeader,
 				author$project$Pomodoro$viewTimer(model.timer),
-				author$project$Pomodoro$viewTaskList(model.tasks),
+				author$project$Pomodoro$viewTaskList(model),
 				author$project$Pomodoro$viewNewTask(model)
 			]));
-};
-var elm$browser$Browser$External = function (a) {
-	return {$: 'External', a: a};
-};
-var elm$browser$Browser$Internal = function (a) {
-	return {$: 'Internal', a: a};
-};
-var elm$browser$Browser$Dom$NotFound = function (a) {
-	return {$: 'NotFound', a: a};
-};
-var elm$core$Basics$never = function (_n0) {
-	never:
-	while (true) {
-		var nvr = _n0.a;
-		var $temp$_n0 = nvr;
-		_n0 = $temp$_n0;
-		continue never;
-	}
-};
-var elm$core$Task$Perform = function (a) {
-	return {$: 'Perform', a: a};
-};
-var elm$core$Task$init = elm$core$Task$succeed(_Utils_Tuple0);
-var elm$core$Task$map = F2(
-	function (func, taskA) {
-		return A2(
-			elm$core$Task$andThen,
-			function (a) {
-				return elm$core$Task$succeed(
-					func(a));
-			},
-			taskA);
-	});
-var elm$core$Task$spawnCmd = F2(
-	function (router, _n0) {
-		var task = _n0.a;
-		return _Scheduler_spawn(
-			A2(
-				elm$core$Task$andThen,
-				elm$core$Platform$sendToApp(router),
-				task));
-	});
-var elm$core$Task$onEffects = F3(
-	function (router, commands, state) {
-		return A2(
-			elm$core$Task$map,
-			function (_n0) {
-				return _Utils_Tuple0;
-			},
-			elm$core$Task$sequence(
-				A2(
-					elm$core$List$map,
-					elm$core$Task$spawnCmd(router),
-					commands)));
-	});
-var elm$core$Task$onSelfMsg = F3(
-	function (_n0, _n1, _n2) {
-		return elm$core$Task$succeed(_Utils_Tuple0);
-	});
-var elm$core$Task$cmdMap = F2(
-	function (tagger, _n0) {
-		var task = _n0.a;
-		return elm$core$Task$Perform(
-			A2(elm$core$Task$map, tagger, task));
-	});
-_Platform_effectManagers['Task'] = _Platform_createManager(elm$core$Task$init, elm$core$Task$onEffects, elm$core$Task$onSelfMsg, elm$core$Task$cmdMap);
-var elm$core$Task$command = _Platform_leaf('Task');
-var elm$core$Task$perform = F2(
-	function (toMessage, task) {
-		return elm$core$Task$command(
-			elm$core$Task$Perform(
-				A2(elm$core$Task$map, toMessage, task)));
-	});
-var elm$core$String$slice = _String_slice;
-var elm$core$String$dropLeft = F2(
-	function (n, string) {
-		return (n < 1) ? string : A3(
-			elm$core$String$slice,
-			n,
-			elm$core$String$length(string),
-			string);
-	});
-var elm$core$String$startsWith = _String_startsWith;
-var elm$url$Url$Http = {$: 'Http'};
-var elm$url$Url$Https = {$: 'Https'};
-var elm$core$String$indexes = _String_indexes;
-var elm$core$String$left = F2(
-	function (n, string) {
-		return (n < 1) ? '' : A3(elm$core$String$slice, 0, n, string);
-	});
-var elm$core$String$contains = _String_contains;
-var elm$core$String$toInt = _String_toInt;
-var elm$url$Url$Url = F6(
-	function (protocol, host, port_, path, query, fragment) {
-		return {fragment: fragment, host: host, path: path, port_: port_, protocol: protocol, query: query};
-	});
-var elm$url$Url$chompBeforePath = F5(
-	function (protocol, path, params, frag, str) {
-		if (elm$core$String$isEmpty(str) || A2(elm$core$String$contains, '@', str)) {
-			return elm$core$Maybe$Nothing;
-		} else {
-			var _n0 = A2(elm$core$String$indexes, ':', str);
-			if (!_n0.b) {
-				return elm$core$Maybe$Just(
-					A6(elm$url$Url$Url, protocol, str, elm$core$Maybe$Nothing, path, params, frag));
-			} else {
-				if (!_n0.b.b) {
-					var i = _n0.a;
-					var _n1 = elm$core$String$toInt(
-						A2(elm$core$String$dropLeft, i + 1, str));
-					if (_n1.$ === 'Nothing') {
-						return elm$core$Maybe$Nothing;
-					} else {
-						var port_ = _n1;
-						return elm$core$Maybe$Just(
-							A6(
-								elm$url$Url$Url,
-								protocol,
-								A2(elm$core$String$left, i, str),
-								port_,
-								path,
-								params,
-								frag));
-					}
-				} else {
-					return elm$core$Maybe$Nothing;
-				}
-			}
-		}
-	});
-var elm$url$Url$chompBeforeQuery = F4(
-	function (protocol, params, frag, str) {
-		if (elm$core$String$isEmpty(str)) {
-			return elm$core$Maybe$Nothing;
-		} else {
-			var _n0 = A2(elm$core$String$indexes, '/', str);
-			if (!_n0.b) {
-				return A5(elm$url$Url$chompBeforePath, protocol, '/', params, frag, str);
-			} else {
-				var i = _n0.a;
-				return A5(
-					elm$url$Url$chompBeforePath,
-					protocol,
-					A2(elm$core$String$dropLeft, i, str),
-					params,
-					frag,
-					A2(elm$core$String$left, i, str));
-			}
-		}
-	});
-var elm$url$Url$chompBeforeFragment = F3(
-	function (protocol, frag, str) {
-		if (elm$core$String$isEmpty(str)) {
-			return elm$core$Maybe$Nothing;
-		} else {
-			var _n0 = A2(elm$core$String$indexes, '?', str);
-			if (!_n0.b) {
-				return A4(elm$url$Url$chompBeforeQuery, protocol, elm$core$Maybe$Nothing, frag, str);
-			} else {
-				var i = _n0.a;
-				return A4(
-					elm$url$Url$chompBeforeQuery,
-					protocol,
-					elm$core$Maybe$Just(
-						A2(elm$core$String$dropLeft, i + 1, str)),
-					frag,
-					A2(elm$core$String$left, i, str));
-			}
-		}
-	});
-var elm$url$Url$chompAfterProtocol = F2(
-	function (protocol, str) {
-		if (elm$core$String$isEmpty(str)) {
-			return elm$core$Maybe$Nothing;
-		} else {
-			var _n0 = A2(elm$core$String$indexes, '#', str);
-			if (!_n0.b) {
-				return A3(elm$url$Url$chompBeforeFragment, protocol, elm$core$Maybe$Nothing, str);
-			} else {
-				var i = _n0.a;
-				return A3(
-					elm$url$Url$chompBeforeFragment,
-					protocol,
-					elm$core$Maybe$Just(
-						A2(elm$core$String$dropLeft, i + 1, str)),
-					A2(elm$core$String$left, i, str));
-			}
-		}
-	});
-var elm$url$Url$fromString = function (str) {
-	return A2(elm$core$String$startsWith, 'http://', str) ? A2(
-		elm$url$Url$chompAfterProtocol,
-		elm$url$Url$Http,
-		A2(elm$core$String$dropLeft, 7, str)) : (A2(elm$core$String$startsWith, 'https://', str) ? A2(
-		elm$url$Url$chompAfterProtocol,
-		elm$url$Url$Https,
-		A2(elm$core$String$dropLeft, 8, str)) : elm$core$Maybe$Nothing);
 };
 var elm$browser$Browser$element = _Browser_element;
 var author$project$Pomodoro$main = elm$browser$Browser$element(
