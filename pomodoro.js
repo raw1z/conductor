@@ -6603,6 +6603,17 @@ var author$project$Pomodoro$viewTimerClassNames = function (timer) {
 			return 'timer timer-long-pause';
 	}
 };
+var author$project$Pomodoro$viewTimerDescription = function (timer) {
+	var _n0 = timer.status;
+	switch (_n0.$) {
+		case 'Work':
+			return elm$html$Html$text(timer.task.description);
+		case 'Pause':
+			return elm$html$Html$text('Take a breathe...');
+		default:
+			return elm$html$Html$text('Take some rest...');
+	}
+};
 var elm$core$String$cons = _String_cons;
 var elm$core$String$fromChar = function (_char) {
 	return A2(elm$core$String$cons, _char, '');
@@ -6753,19 +6764,19 @@ var author$project$Pomodoro$viewTimerProgress = function (timer) {
 				author$project$Pomodoro$viewTimerTimeout(timer)
 			]));
 };
-var author$project$Pomodoro$viewTimer = function (timer) {
-	if (timer.$ === 'Just') {
-		var justTimer = timer.a;
+var author$project$Pomodoro$viewTimer = function (maybeTimer) {
+	if (maybeTimer.$ === 'Just') {
+		var timer = maybeTimer.a;
 		return A2(
 			elm$html$Html$div,
 			_List_fromArray(
 				[
 					elm$html$Html$Attributes$class(
-					author$project$Pomodoro$viewTimerClassNames(justTimer))
+					author$project$Pomodoro$viewTimerClassNames(timer))
 				]),
 			_List_fromArray(
 				[
-					author$project$Pomodoro$viewTimerProgress(justTimer),
+					author$project$Pomodoro$viewTimerProgress(timer),
 					A2(
 					elm$html$Html$div,
 					_List_fromArray(
@@ -6774,7 +6785,7 @@ var author$project$Pomodoro$viewTimer = function (timer) {
 						]),
 					_List_fromArray(
 						[
-							elm$html$Html$text(justTimer.task.description)
+							author$project$Pomodoro$viewTimerDescription(timer)
 						]))
 				]));
 	} else {

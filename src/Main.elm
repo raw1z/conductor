@@ -279,14 +279,27 @@ viewTimerClassNames timer =
             "timer timer-long-pause"
 
 
+viewTimerDescription : Timer -> Html Msg
+viewTimerDescription timer =
+    case timer.status of
+        Work _ ->
+            text timer.task.description
+
+        Pause _ ->
+            text "Take a breathe..."
+
+        LongPause ->
+            text "Take some rest..."
+
+
 viewTimer : Maybe Timer -> Html Msg
-viewTimer timer =
-    case timer of
-        Just justTimer ->
-            div [ class (viewTimerClassNames justTimer) ]
-                [ viewTimerProgress justTimer
+viewTimer maybeTimer =
+    case maybeTimer of
+        Just timer ->
+            div [ class (viewTimerClassNames timer) ]
+                [ viewTimerProgress timer
                 , div [ class "task-description" ]
-                    [ text justTimer.task.description ]
+                    [ viewTimerDescription timer ]
                 ]
 
         Nothing ->

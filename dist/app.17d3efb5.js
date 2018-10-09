@@ -22230,6 +22230,17 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 				return 'timer timer-long-pause';
 		}
 	};
+	var author$project$Pomodoro$viewTimerDescription = function author$project$Pomodoro$viewTimerDescription(timer) {
+		var _n0 = timer.status;
+		switch (_n0.$) {
+			case 'Work':
+				return elm$html$Html$text(timer.task.description);
+			case 'Pause':
+				return elm$html$Html$text('Take a breathe...');
+			default:
+				return elm$html$Html$text('Take some rest...');
+		}
+	};
 	var elm$core$String$cons = _String_cons;
 	var elm$core$String$fromChar = function elm$core$String$fromChar(_char) {
 		return A2(elm$core$String$cons, _char, '');
@@ -22282,10 +22293,10 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 		var progress = (timer.initialValue - timer.timeout) / timer.initialValue;
 		return A2(elm$html$Html$div, _List_fromArray([elm$html$Html$Attributes$class('timer-progress')]), _List_fromArray([A2(elm$html$Html$div, _List_fromArray([elm$html$Html$Attributes$class('timer-progress-ring')]), _List_fromArray([A3(author$project$ProgressRing$viewProgress, 150, 6, progress)])), author$project$Pomodoro$viewTimerTimeout(timer)]));
 	};
-	var author$project$Pomodoro$viewTimer = function author$project$Pomodoro$viewTimer(timer) {
-		if (timer.$ === 'Just') {
-			var justTimer = timer.a;
-			return A2(elm$html$Html$div, _List_fromArray([elm$html$Html$Attributes$class(author$project$Pomodoro$viewTimerClassNames(justTimer))]), _List_fromArray([author$project$Pomodoro$viewTimerProgress(justTimer), A2(elm$html$Html$div, _List_fromArray([elm$html$Html$Attributes$class('task-description')]), _List_fromArray([elm$html$Html$text(justTimer.task.description)]))]));
+	var author$project$Pomodoro$viewTimer = function author$project$Pomodoro$viewTimer(maybeTimer) {
+		if (maybeTimer.$ === 'Just') {
+			var timer = maybeTimer.a;
+			return A2(elm$html$Html$div, _List_fromArray([elm$html$Html$Attributes$class(author$project$Pomodoro$viewTimerClassNames(timer))]), _List_fromArray([author$project$Pomodoro$viewTimerProgress(timer), A2(elm$html$Html$div, _List_fromArray([elm$html$Html$Attributes$class('task-description')]), _List_fromArray([author$project$Pomodoro$viewTimerDescription(timer)]))]));
 		} else {
 			return A2(elm$html$Html$div, _List_Nil, _List_Nil);
 		}
@@ -22359,7 +22370,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = '' || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + '52157' + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + '50460' + '/');
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
 

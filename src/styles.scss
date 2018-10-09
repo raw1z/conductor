@@ -77,6 +77,9 @@ body {
     color: $gray-500;
 
     .actions {
+      opacity: 0;
+      transition: opacity 0.25s;
+
       .btn {
         background-color: transparent;
         transition: color 0.5s;
@@ -90,9 +93,15 @@ body {
           color: $danger;
         }
 
-        &.start-task-btn:hover {
+        &.start-task-btn:hover, &.stop-task-btn:hover {
           color: $warning;
         }
+      }
+    }
+
+    &:hover {
+      .actions {
+        opacity: 1;
       }
     }
 

@@ -6362,18 +6362,23 @@ body {
     height: 40px;
     line-height: 40px;
     color: #adb5bd; }
-    .tasks .task .actions .btn {
-      background-color: transparent;
-      transition: color 0.5s;
-      color: #fff;
-      border-radius: 0;
-      border: none;
-      outline: none;
-      box-shadow: none; }
-      .tasks .task .actions .btn.remove-task-btn:hover {
-        color: #dc3545; }
-      .tasks .task .actions .btn.start-task-btn:hover {
-        color: #ffc107; }
+    .tasks .task .actions {
+      opacity: 0;
+      transition: opacity 0.25s; }
+      .tasks .task .actions .btn {
+        background-color: transparent;
+        transition: color 0.5s;
+        color: #fff;
+        border-radius: 0;
+        border: none;
+        outline: none;
+        box-shadow: none; }
+        .tasks .task .actions .btn.remove-task-btn:hover {
+          color: #dc3545; }
+        .tasks .task .actions .btn.start-task-btn:hover, .tasks .task .actions .btn.stop-task-btn:hover {
+          color: #ffc107; }
+    .tasks .task:hover .actions {
+      opacity: 1; }
     .tasks .task .desc {
       padding-left: 0.5rem; }
     .tasks .task.active {
