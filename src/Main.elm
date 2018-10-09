@@ -2,9 +2,11 @@ port module Pomodoro exposing (main)
 
 import Browser
 import Browser.Dom exposing (focus)
+import Browser.Events exposing (onKeyDown, onKeyPress, onKeyUp)
 import Html exposing (..)
 import Html.Attributes exposing (class, disabled, href, id, placeholder, src, type_, value)
 import Html.Events exposing (onClick, onDoubleClick, onInput, onSubmit)
+import Json.Decode exposing (Decoder, field, map, string)
 import ProgressRing
 import Task
 import Time
@@ -250,6 +252,7 @@ type Msg
     | SelectTask Task
     | Tick Time.Posix
     | FocusResult (Result Browser.Dom.Error ())
+    | OnKeyPressed String
 
 
 addNewTask : Model -> Model
@@ -260,14 +263,18 @@ addNewTask model =
 
         Just task ->
             let
+                newTaskId =
+                    List.length model.tasks + 1
+
                 newTask =
-                    { task | id = List.length model.tasks + 1 }
+                    { task | id = newTaskId }
 
                 newTasks =
-                    model.tasks ++ [ task ]
+                    model.tasks ++ [ newTask ]
             in
             { model
                 | tasks = newTasks
+                , selectedTaskId = newTaskId
                 , newTask = Nothing
             }
 
@@ -380,6 +387,125 @@ updateTimerAtTick model =
             ( { model | timer = newTimer }, cmd )
 
 
+send : Msg -> Cmd Msg
+send msg =
+    Task.succeed msg
+        |> Task.perform identity
+
+
+getNextTaskId : List Task -> Id -> Maybe Id
+getNextTaskId tasks selectedTaskId =
+    case tasks of
+        [] ->
+            Nothing
+
+        task :: rest ->
+            if task.id == selectedTaskId then
+                let
+                    maybeNextTask =
+                        List.head rest
+                in
+                case maybeNextTask of
+                    Nothing ->
+                        Nothing
+
+                    Just nextTask ->
+                        Just nextTask.id
+
+            else
+                getNextTaskId rest selectedTaskId
+
+
+getFirstTaskId : List Task -> Id
+getFirstTaskId tasks =
+    let
+        maybeFirstTask =
+            List.head tasks
+    in
+    case maybeFirstTask of
+        Just firstTask ->
+            firstTask.id
+
+        Nothing ->
+            0
+
+
+selectNextTask : Model -> Model
+selectNextTask model =
+    let
+        maybeNextTaskId =
+            getNextTaskId model.tasks model.selectedTaskId
+
+        selectedTaskId =
+            case maybeNextTaskId of
+                Just id ->
+                    id
+
+                Nothing ->
+                    getFirstTaskId model.tasks
+    in
+    { model | selectedTaskId = selectedTaskId }
+
+
+selectPreviousTask : Model -> Model
+selectPreviousTask model =
+    let
+        reversedTaskList =
+            List.reverse model.tasks
+
+        maybePreviousTaskId =
+            getNextTaskId reversedTaskList model.selectedTaskId
+
+        selectedTaskId =
+            case maybePreviousTaskId of
+                Just id ->
+                    id
+
+                Nothing ->
+                    getFirstTaskId reversedTaskList
+    in
+    { model | selectedTaskId = selectedTaskId }
+
+
+processKey : Model -> String -> ( Model, Cmd Msg )
+processKey model key =
+    let
+        isSelected task =
+            task.id == model.selectedTaskId
+
+        maybeSelectedTask =
+            List.filter isSelected model.tasks |> List.head
+    in
+    case key of
+        "n" ->
+            ( model, send (UpdateTask "") )
+
+        "j" ->
+            ( selectNextTask model, Cmd.none )
+
+        "k" ->
+            ( selectPreviousTask model, Cmd.none )
+
+        "Enter" ->
+            case maybeSelectedTask of
+                Nothing ->
+                    ( model, Cmd.none )
+
+                Just selectedTask ->
+                    ( model, send (UpdateTimer selectedTask) )
+
+        "x" ->
+            case maybeSelectedTask of
+                Nothing ->
+                    ( model, Cmd.none )
+
+                Just selectedTask ->
+                    ( removeTask model selectedTask, Cmd.none )
+
+        _ ->
+            ( model, Cmd.none )
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -419,10 +545,26 @@ update msg model =
         Tick _ ->
             updateTimerAtTick model
 
+        OnKeyPressed key ->
+            case model.newTask of
+                Nothing ->
+                    processKey model key
+
+                Just _ ->
+                    ( model, Cmd.none )
+
+
+keyDecoder : Decoder String
+keyDecoder =
+    field "key" string
+
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Time.every 1000 Tick
+    Sub.batch
+        [ Time.every 1000 Tick
+        , onKeyPress <| map OnKeyPressed keyDecoder
+        ]
 
 
 main =

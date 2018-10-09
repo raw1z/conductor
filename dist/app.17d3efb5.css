@@ -6364,7 +6364,8 @@ body {
       color: #fff;
       border-radius: 0;
       border: none;
-      outline: none; }
+      outline: none;
+      box-shadow: none; }
       .tasks .task .actions .btn.remove-task-btn:hover {
         color: #dc3545; }
       .tasks .task .actions .btn.start-task-btn:hover {

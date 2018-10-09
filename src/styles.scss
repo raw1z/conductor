@@ -78,6 +78,7 @@ body {
         border-radius: 0;
         border: none;
         outline: none;
+        box-shadow: none;
 
         &.remove-task-btn:hover {
           color: $danger;
