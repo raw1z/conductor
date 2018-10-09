@@ -6395,6 +6395,8 @@ body {
     background-color: #28a745; }
   .timer.timer-long-pause {
     background-color: #007bff; }
+  .timer.timer-inactive {
+    background-color: #343a40; }
   .timer .timeout {
     text-align: center;
     font-size: 5.25rem;

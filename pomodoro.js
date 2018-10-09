@@ -5830,12 +5830,13 @@ var author$project$Pomodoro$addNewTask = function (model) {
 var author$project$Pomodoro$UpdateTask = function (a) {
 	return {$: 'UpdateTask', a: a};
 };
+var author$project$Pomodoro$Inactive = {$: 'Inactive'};
 var author$project$Pomodoro$isActiveTask = F2(
 	function (model, task) {
 		var _n0 = model.timer;
 		if (_n0.$ === 'Just') {
 			var timer = _n0.a;
-			return _Utils_eq(timer.task.id, task.id) ? true : false;
+			return _Utils_eq(timer.status, author$project$Pomodoro$Inactive) ? false : (_Utils_eq(timer.task.id, task.id) ? true : false);
 		} else {
 			return false;
 		}
@@ -6070,31 +6071,46 @@ var author$project$Pomodoro$notify = _Platform_outgoingPort('notify', elm$json$J
 var author$project$Pomodoro$pauseTimeout = 300;
 var author$project$Pomodoro$shiftTimer = function (timer) {
 	var _n0 = timer.status;
-	if (_n0.$ === 'Work') {
-		if (_n0.a === 4) {
+	switch (_n0.$) {
+		case 'Work':
+			if (_n0.a === 4) {
+				var newTimer = _Utils_update(
+					timer,
+					{initialValue: author$project$Pomodoro$longPauseTimeout, status: author$project$Pomodoro$LongPause, timeout: author$project$Pomodoro$longPauseTimeout});
+				return _Utils_Tuple2(
+					elm$core$Maybe$Just(newTimer),
+					author$project$Pomodoro$notify('Take some rest...'));
+			} else {
+				var count = _n0.a;
+				var newTimer = _Utils_update(
+					timer,
+					{
+						initialValue: author$project$Pomodoro$pauseTimeout,
+						status: author$project$Pomodoro$Pause(count),
+						timeout: author$project$Pomodoro$pauseTimeout
+					});
+				return _Utils_Tuple2(
+					elm$core$Maybe$Just(newTimer),
+					author$project$Pomodoro$notify('Take a breathe...'));
+			}
+		case 'Pause':
 			var newTimer = _Utils_update(
 				timer,
-				{initialValue: author$project$Pomodoro$longPauseTimeout, status: author$project$Pomodoro$LongPause, timeout: author$project$Pomodoro$longPauseTimeout});
+				{status: author$project$Pomodoro$Inactive});
 			return _Utils_Tuple2(
 				elm$core$Maybe$Just(newTimer),
-				author$project$Pomodoro$notify('Take some rest...'));
-		} else {
-			var count = _n0.a;
+				author$project$Pomodoro$notify('Ready'));
+		case 'LongPause':
 			var newTimer = _Utils_update(
 				timer,
-				{
-					initialValue: author$project$Pomodoro$pauseTimeout,
-					status: author$project$Pomodoro$Pause(count),
-					timeout: author$project$Pomodoro$pauseTimeout
-				});
+				{status: author$project$Pomodoro$Inactive});
 			return _Utils_Tuple2(
 				elm$core$Maybe$Just(newTimer),
-				author$project$Pomodoro$notify('Take a breathe...'));
-		}
-	} else {
-		return _Utils_Tuple2(
-			elm$core$Maybe$Just(timer),
-			elm$core$Platform$Cmd$none);
+				author$project$Pomodoro$notify('Ready'));
+		default:
+			return _Utils_Tuple2(
+				elm$core$Maybe$Just(timer),
+				elm$core$Platform$Cmd$none);
 	}
 };
 var author$project$Pomodoro$decreaseTimer = function (timer) {
@@ -6599,8 +6615,10 @@ var author$project$Pomodoro$viewTimerClassNames = function (timer) {
 			return 'timer timer-work';
 		case 'Pause':
 			return 'timer timer-pause';
-		default:
+		case 'LongPause':
 			return 'timer timer-long-pause';
+		default:
+			return 'timer timer-inactive';
 	}
 };
 var author$project$Pomodoro$viewTimerDescription = function (timer) {
@@ -6610,8 +6628,10 @@ var author$project$Pomodoro$viewTimerDescription = function (timer) {
 			return elm$html$Html$text(timer.task.description);
 		case 'Pause':
 			return elm$html$Html$text('Take a breathe...');
-		default:
+		case 'LongPause':
 			return elm$html$Html$text('Take some rest...');
+		default:
+			return elm$html$Html$text('Ready');
 	}
 };
 var elm$core$String$cons = _String_cons;

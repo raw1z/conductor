@@ -30,6 +30,7 @@ type TimerStatus
     = Work Int
     | Pause Int
     | LongPause
+    | Inactive
 
 
 type alias Timer =
@@ -176,7 +177,10 @@ isActiveTask : Model -> Task -> Bool
 isActiveTask model task =
     case model.timer of
         Just timer ->
-            if timer.task.id == task.id then
+            if timer.status == Inactive then
+                False
+
+            else if timer.task.id == task.id then
                 True
 
             else
@@ -278,6 +282,9 @@ viewTimerClassNames timer =
         LongPause ->
             "timer timer-long-pause"
 
+        Inactive ->
+            "timer timer-inactive"
+
 
 viewTimerDescription : Timer -> Html Msg
 viewTimerDescription timer =
@@ -290,6 +297,9 @@ viewTimerDescription timer =
 
         LongPause ->
             text "Take some rest..."
+
+        Inactive ->
+            text "Ready"
 
 
 viewTimer : Maybe Timer -> Html Msg
@@ -433,6 +443,20 @@ shiftTimer timer =
                     }
             in
             ( Just newTimer, notify "Take a breathe..." )
+
+        Pause _ ->
+            let
+                newTimer =
+                    { timer | status = Inactive }
+            in
+            ( Just newTimer, notify "Ready" )
+
+        LongPause ->
+            let
+                newTimer =
+                    { timer | status = Inactive }
+            in
+            ( Just newTimer, notify "Ready" )
 
         _ ->
             ( Just timer, Cmd.none )

@@ -139,6 +139,10 @@ body {
     background-color: $primary;
   }
 
+  &.timer-inactive {
+    background-color: $dark;
+  }
+
   .timeout {
     text-align: center;
     font-size: 2.1*$h1-font-size;

@@ -19,6 +19,35 @@ let notify = (message) => {
   }
 }
 
+let persistData = (data) => {
+  try {
+    localStorage.setItem('pomodoro', JSON.stringify(data))
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+let loadData = () => {
+  let defaultData = {
+    tasks: [],
+    lastNewId: 0,
+    selectedTaskId: 0
+  }
+
+  try {
+    let data = localStorage.getItem('pomodoro')
+    if (data == null || data == undefined) {
+      return defaultData
+    }
+
+    return JSON.parse(data)
+  } catch (e) {
+    console.log(e);
+    return defaultData;
+  }
+}
+
+
 window.onload = () => {
   let app = Elm.Pomodoro.init({
     node: document.getElementById("app")
