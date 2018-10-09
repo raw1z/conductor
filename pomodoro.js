@@ -5830,9 +5830,16 @@ var author$project$Pomodoro$addNewTask = function (model) {
 var author$project$Pomodoro$UpdateTask = function (a) {
 	return {$: 'UpdateTask', a: a};
 };
-var author$project$Pomodoro$UpdateTimer = function (a) {
-	return {$: 'UpdateTimer', a: a};
-};
+var author$project$Pomodoro$isActiveTask = F2(
+	function (model, task) {
+		var _n0 = model.timer;
+		if (_n0.$ === 'Just') {
+			var timer = _n0.a;
+			return _Utils_eq(timer.task.id, task.id) ? true : false;
+		} else {
+			return false;
+		}
+	});
 var elm$core$Basics$neq = _Utils_notEqual;
 var elm$core$List$filter = F2(
 	function (isGood, list) {
@@ -5855,6 +5862,15 @@ var author$project$Pomodoro$removeTask = F2(
 			{
 				tasks: A2(elm$core$List$filter, isNotRemovable, model.tasks)
 			});
+	});
+var author$project$Pomodoro$removeSelectedTask = F2(
+	function (model, maybeSelectedTask) {
+		if (maybeSelectedTask.$ === 'Nothing') {
+			return model;
+		} else {
+			var selectedTask = maybeSelectedTask.a;
+			return A2(author$project$Pomodoro$isActiveTask, model, selectedTask) ? model : A2(author$project$Pomodoro$removeTask, model, selectedTask);
+		}
 	});
 var elm$core$List$head = function (list) {
 	if (list.b) {
@@ -5936,6 +5952,20 @@ var author$project$Pomodoro$send = function (msg) {
 		elm$core$Basics$identity,
 		elm$core$Task$succeed(msg));
 };
+var author$project$Pomodoro$RemoveTimer = {$: 'RemoveTimer'};
+var author$project$Pomodoro$UpdateTimer = function (a) {
+	return {$: 'UpdateTimer', a: a};
+};
+var author$project$Pomodoro$toggleTimerForSelectedTask = F2(
+	function (model, maybeSelectedTask) {
+		if (maybeSelectedTask.$ === 'Nothing') {
+			return elm$core$Platform$Cmd$none;
+		} else {
+			var selectedTask = maybeSelectedTask.a;
+			return A2(author$project$Pomodoro$isActiveTask, model, selectedTask) ? author$project$Pomodoro$send(author$project$Pomodoro$RemoveTimer) : author$project$Pomodoro$send(
+				author$project$Pomodoro$UpdateTimer(selectedTask));
+		}
+	});
 var author$project$Pomodoro$processKey = F2(
 	function (model, key) {
 		var isSelected = function (task) {
@@ -5958,24 +5988,13 @@ var author$project$Pomodoro$processKey = F2(
 					author$project$Pomodoro$selectPreviousTask(model),
 					elm$core$Platform$Cmd$none);
 			case 'Enter':
-				if (maybeSelectedTask.$ === 'Nothing') {
-					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
-				} else {
-					var selectedTask = maybeSelectedTask.a;
-					return _Utils_Tuple2(
-						model,
-						author$project$Pomodoro$send(
-							author$project$Pomodoro$UpdateTimer(selectedTask)));
-				}
+				return _Utils_Tuple2(
+					model,
+					A2(author$project$Pomodoro$toggleTimerForSelectedTask, model, maybeSelectedTask));
 			case 'x':
-				if (maybeSelectedTask.$ === 'Nothing') {
-					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
-				} else {
-					var selectedTask = maybeSelectedTask.a;
-					return _Utils_Tuple2(
-						A2(author$project$Pomodoro$removeTask, model, selectedTask),
-						elm$core$Platform$Cmd$none);
-				}
+				return _Utils_Tuple2(
+					A2(author$project$Pomodoro$removeSelectedTask, model, maybeSelectedTask),
+					elm$core$Platform$Cmd$none);
 			default:
 				return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 		}
@@ -6434,16 +6453,6 @@ var author$project$Pomodoro$viewNewTask = function (model) {
 var author$project$Pomodoro$SelectTask = function (a) {
 	return {$: 'SelectTask', a: a};
 };
-var author$project$Pomodoro$isActiveTask = F2(
-	function (model, task) {
-		var _n0 = model.timer;
-		if (_n0.$ === 'Just') {
-			var timer = _n0.a;
-			return _Utils_eq(timer.task.id, task.id) ? true : false;
-		} else {
-			return false;
-		}
-	});
 var author$project$Pomodoro$isTimerOn = function (model) {
 	var _n0 = model.timer;
 	if (_n0.$ === 'Just') {
@@ -6452,7 +6461,6 @@ var author$project$Pomodoro$isTimerOn = function (model) {
 		return false;
 	}
 };
-var author$project$Pomodoro$RemoveTimer = {$: 'RemoveTimer'};
 var author$project$Pomodoro$viewActiveTaskActions = function (task) {
 	return _List_fromArray(
 		[
@@ -6478,50 +6486,56 @@ var author$project$Pomodoro$viewActiveTaskActions = function (task) {
 var author$project$Pomodoro$RemoveTask = function (a) {
 	return {$: 'RemoveTask', a: a};
 };
-var author$project$Pomodoro$viewInactiveTaskActions = function (task) {
-	return _List_fromArray(
-		[
-			A2(
-			elm$html$Html$button,
-			_List_fromArray(
-				[
-					elm$html$Html$Attributes$class('btn start-task-btn'),
-					elm$html$Html$Events$onClick(
-					author$project$Pomodoro$UpdateTimer(task))
-				]),
-			_List_fromArray(
-				[
-					A2(
-					elm$html$Html$i,
-					_List_fromArray(
-						[
-							elm$html$Html$Attributes$class('fa fa-play')
-						]),
-					_List_Nil)
-				])),
-			A2(
-			elm$html$Html$button,
-			_List_fromArray(
-				[
-					elm$html$Html$Attributes$class('btn remove-task-btn'),
-					elm$html$Html$Events$onClick(
-					author$project$Pomodoro$RemoveTask(task))
-				]),
-			_List_fromArray(
-				[
-					A2(
-					elm$html$Html$i,
-					_List_fromArray(
-						[
-							elm$html$Html$Attributes$class('fa fa-remove')
-						]),
-					_List_Nil)
-				]))
-		]);
+var author$project$Pomodoro$viewRemoveTaskButton = function (task) {
+	return A2(
+		elm$html$Html$button,
+		_List_fromArray(
+			[
+				elm$html$Html$Attributes$class('btn remove-task-btn'),
+				elm$html$Html$Events$onClick(
+				author$project$Pomodoro$RemoveTask(task))
+			]),
+		_List_fromArray(
+			[
+				A2(
+				elm$html$Html$i,
+				_List_fromArray(
+					[
+						elm$html$Html$Attributes$class('fa fa-remove')
+					]),
+				_List_Nil)
+			]));
+};
+var author$project$Pomodoro$viewStartTaskButton = function (task) {
+	return A2(
+		elm$html$Html$button,
+		_List_fromArray(
+			[
+				elm$html$Html$Attributes$class('btn start-task-btn'),
+				elm$html$Html$Events$onClick(
+				author$project$Pomodoro$UpdateTimer(task))
+			]),
+		_List_fromArray(
+			[
+				A2(
+				elm$html$Html$i,
+				_List_fromArray(
+					[
+						elm$html$Html$Attributes$class('fa fa-play')
+					]),
+				_List_Nil)
+			]));
 };
 var author$project$Pomodoro$viewTaskActions = F2(
 	function (model, task) {
-		var buttons = author$project$Pomodoro$isTimerOn(model) ? (A2(author$project$Pomodoro$isActiveTask, model, task) ? author$project$Pomodoro$viewActiveTaskActions(task) : _List_Nil) : author$project$Pomodoro$viewInactiveTaskActions(task);
+		var buttons = author$project$Pomodoro$isTimerOn(model) ? (A2(author$project$Pomodoro$isActiveTask, model, task) ? author$project$Pomodoro$viewActiveTaskActions(task) : _List_fromArray(
+			[
+				author$project$Pomodoro$viewRemoveTaskButton(task)
+			])) : _List_fromArray(
+			[
+				author$project$Pomodoro$viewStartTaskButton(task),
+				author$project$Pomodoro$viewRemoveTaskButton(task)
+			]);
 		return A2(
 			elm$html$Html$div,
 			_List_fromArray(

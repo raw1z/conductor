@@ -131,21 +131,24 @@ viewNewTask model =
                 ]
 
 
-viewInactiveTaskActions : Task -> List (Html Msg)
-viewInactiveTaskActions task =
-    [ button
+viewStartTaskButton : Task -> Html Msg
+viewStartTaskButton task =
+    button
         [ class "btn start-task-btn"
         , onClick (UpdateTimer task)
         ]
         [ i [ class "fa fa-play" ] []
         ]
-    , button
+
+
+viewRemoveTaskButton : Task -> Html Msg
+viewRemoveTaskButton task =
+    button
         [ class "btn remove-task-btn"
         , onClick (RemoveTask task)
         ]
         [ i [ class "fa fa-remove" ] []
         ]
-    ]
 
 
 viewActiveTaskActions : Task -> List (Html Msg)
@@ -192,10 +195,12 @@ viewTaskActions model task =
                     viewActiveTaskActions task
 
                 else
-                    []
+                    [ viewRemoveTaskButton task ]
 
             else
-                viewInactiveTaskActions task
+                [ viewStartTaskButton task
+                , viewRemoveTaskButton task
+                ]
     in
     div [ class "actions d-flex justify-content-center align-items-center" ]
         buttons
@@ -528,6 +533,34 @@ selectPreviousTask model =
     { model | selectedTaskId = selectedTaskId }
 
 
+removeSelectedTask : Model -> Maybe Task -> Model
+removeSelectedTask model maybeSelectedTask =
+    case maybeSelectedTask of
+        Nothing ->
+            model
+
+        Just selectedTask ->
+            if isActiveTask model selectedTask then
+                model
+
+            else
+                removeTask model selectedTask
+
+
+toggleTimerForSelectedTask : Model -> Maybe Task -> Cmd Msg
+toggleTimerForSelectedTask model maybeSelectedTask =
+    case maybeSelectedTask of
+        Nothing ->
+            Cmd.none
+
+        Just selectedTask ->
+            if isActiveTask model selectedTask then
+                send RemoveTimer
+
+            else
+                send (UpdateTimer selectedTask)
+
+
 processKey : Model -> String -> ( Model, Cmd Msg )
 processKey model key =
     let
@@ -548,20 +581,10 @@ processKey model key =
             ( selectPreviousTask model, Cmd.none )
 
         "Enter" ->
-            case maybeSelectedTask of
-                Nothing ->
-                    ( model, Cmd.none )
-
-                Just selectedTask ->
-                    ( model, send (UpdateTimer selectedTask) )
+            ( model, toggleTimerForSelectedTask model maybeSelectedTask )
 
         "x" ->
-            case maybeSelectedTask of
-                Nothing ->
-                    ( model, Cmd.none )
-
-                Just selectedTask ->
-                    ( removeTask model selectedTask, Cmd.none )
+            ( removeSelectedTask model maybeSelectedTask, Cmd.none )
 
         _ ->
             ( model, Cmd.none )
