@@ -22107,7 +22107,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 	});
 	var elm$html$Html$a = _VirtualDom_node('a');
 	var elm$html$Html$div = _VirtualDom_node('div');
-	var elm$html$Html$h1 = _VirtualDom_node('h1');
+	var elm$html$Html$h2 = _VirtualDom_node('h2');
 	var elm$html$Html$i = _VirtualDom_node('i');
 	var elm$html$Html$nav = _VirtualDom_node('nav');
 	var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
@@ -22130,7 +22130,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 	var elm$html$Html$Events$onClick = function elm$html$Html$Events$onClick(msg) {
 		return A2(elm$html$Html$Events$on, 'click', elm$json$Json$Decode$succeed(msg));
 	};
-	var author$project$Pomodoro$viewHeader = A2(elm$html$Html$nav, _List_fromArray([elm$html$Html$Attributes$class('header')]), _List_fromArray([A2(elm$html$Html$div, _List_fromArray([elm$html$Html$Attributes$class('container')]), _List_fromArray([A2(elm$html$Html$div, _List_fromArray([elm$html$Html$Attributes$class('row')]), _List_fromArray([A2(elm$html$Html$div, _List_fromArray([elm$html$Html$Attributes$class('col-10')]), _List_fromArray([A2(elm$html$Html$h1, _List_Nil, _List_fromArray([elm$html$Html$text('Conductor')]))])), A2(elm$html$Html$div, _List_fromArray([elm$html$Html$Attributes$class('col-2 d-flex align-items-center justify-content-end')]), _List_fromArray([A2(elm$html$Html$a, _List_fromArray([elm$html$Html$Attributes$href('#'), elm$html$Html$Attributes$id('new-task-btn'), elm$html$Html$Events$onClick(author$project$Pomodoro$UpdateTask(''))]), _List_fromArray([A2(elm$html$Html$i, _List_fromArray([elm$html$Html$Attributes$class('fa fa-plus fa-2x')]), _List_Nil)]))]))]))]))]));
+	var author$project$Pomodoro$viewHeader = A2(elm$html$Html$nav, _List_fromArray([elm$html$Html$Attributes$class('header')]), _List_fromArray([A2(elm$html$Html$div, _List_fromArray([elm$html$Html$Attributes$class('container')]), _List_fromArray([A2(elm$html$Html$div, _List_fromArray([elm$html$Html$Attributes$class('row')]), _List_fromArray([A2(elm$html$Html$div, _List_fromArray([elm$html$Html$Attributes$class('col-10 d-flex align-items-center')]), _List_fromArray([A2(elm$html$Html$h2, _List_Nil, _List_fromArray([elm$html$Html$text('Conductor')]))])), A2(elm$html$Html$div, _List_fromArray([elm$html$Html$Attributes$class('col-2 d-flex align-items-center justify-content-end')]), _List_fromArray([A2(elm$html$Html$a, _List_fromArray([elm$html$Html$Attributes$href('#'), elm$html$Html$Attributes$id('new-task-btn'), elm$html$Html$Events$onClick(author$project$Pomodoro$UpdateTask(''))]), _List_fromArray([A2(elm$html$Html$i, _List_fromArray([elm$html$Html$Attributes$class('fa fa-plus fa-2x')]), _List_Nil)]))]))]))]))]));
 	var author$project$Pomodoro$SaveTask = { $: 'SaveTask' };
 	var elm$html$Html$button = _VirtualDom_node('button');
 	var elm$html$Html$form = _VirtualDom_node('form');
@@ -22248,10 +22248,11 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 	var author$project$Pomodoro$formatMinutesOrSeconds = function author$project$Pomodoro$formatMinutesOrSeconds(value) {
 		return A3(elm$core$String$padLeft, 2, _Utils_chr('0'), elm$core$String$fromInt(value));
 	};
+	var elm$html$Html$h1 = _VirtualDom_node('h1');
 	var author$project$Pomodoro$viewTimerTimeout = function author$project$Pomodoro$viewTimerTimeout(timer) {
 		var minutes = timer.timeout / 60 | 0;
 		var seconds = timer.timeout - minutes * 60;
-		return A2(elm$html$Html$h1, _List_fromArray([elm$html$Html$Attributes$class('display-2 timeout')]), _List_fromArray([elm$html$Html$text(author$project$Pomodoro$formatMinutesOrSeconds(minutes)), elm$html$Html$text(':'), elm$html$Html$text(author$project$Pomodoro$formatMinutesOrSeconds(seconds))]));
+		return A2(elm$html$Html$h1, _List_fromArray([elm$html$Html$Attributes$class('timeout')]), _List_fromArray([elm$html$Html$text(author$project$Pomodoro$formatMinutesOrSeconds(minutes)), elm$html$Html$text(':'), elm$html$Html$text(author$project$Pomodoro$formatMinutesOrSeconds(seconds))]));
 	};
 	var elm$core$Basics$pi = _Basics_pi;
 	var elm$core$Basics$round = _Basics_round;
@@ -22358,7 +22359,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = '' || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + '49963' + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + '52157' + '/');
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
 

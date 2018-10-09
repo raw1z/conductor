@@ -6319,7 +6319,11 @@ body {
   color: #fff; }
 
 .header {
-  background-color: #212529; }
+  background-color: #212529;
+  font-weight: 300; }
+  .header h2 {
+    margin: 0;
+    padding: 0; }
   .header #new-task-btn {
     color: #adb5bd;
     cursor: pointer;
@@ -6387,9 +6391,13 @@ body {
   .timer.timer-long-pause {
     background-color: #007bff; }
   .timer .timeout {
-    text-align: center; }
+    text-align: center;
+    font-size: 5.25rem;
+    font-weight: 300; }
   .timer .task-description {
     text-align: center;
+    font-size: 1.5rem;
+    font-weight: 300;
     background-color: rgba(52, 58, 64, 0.1);
     padding-top: 0.5rem;
     padding-bottom: 0.5rem; }

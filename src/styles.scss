@@ -12,6 +12,12 @@ body {
 
 .header {
   background-color: $gray-900;
+  font-weight: $font-weight-light;
+
+  h2 {
+    margin: 0;
+    padding: 0;
+  }
 
   #new-task-btn {
     color: $gray-500;
@@ -126,10 +132,14 @@ body {
 
   .timeout {
     text-align: center;
+    font-size: 2.1*$h1-font-size;
+    font-weight: $font-weight-light;
   }
 
   .task-description {
     text-align: center;
+    font-size: $h4-font-size;
+    font-weight: $font-weight-light;
     background-color: transparentize($dark, 0.9);
     padding: {
       top: 0.5rem;

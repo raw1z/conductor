@@ -6216,7 +6216,7 @@ var author$project$Pomodoro$update = F2(
 	});
 var elm$html$Html$a = _VirtualDom_node('a');
 var elm$html$Html$div = _VirtualDom_node('div');
-var elm$html$Html$h1 = _VirtualDom_node('h1');
+var elm$html$Html$h2 = _VirtualDom_node('h2');
 var elm$html$Html$i = _VirtualDom_node('i');
 var elm$html$Html$nav = _VirtualDom_node('nav');
 var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
@@ -6281,12 +6281,12 @@ var author$project$Pomodoro$viewHeader = A2(
 							elm$html$Html$div,
 							_List_fromArray(
 								[
-									elm$html$Html$Attributes$class('col-10')
+									elm$html$Html$Attributes$class('col-10 d-flex align-items-center')
 								]),
 							_List_fromArray(
 								[
 									A2(
-									elm$html$Html$h1,
+									elm$html$Html$h2,
 									_List_Nil,
 									_List_fromArray(
 										[
@@ -6637,6 +6637,7 @@ var author$project$Pomodoro$formatMinutesOrSeconds = function (value) {
 		_Utils_chr('0'),
 		elm$core$String$fromInt(value));
 };
+var elm$html$Html$h1 = _VirtualDom_node('h1');
 var author$project$Pomodoro$viewTimerTimeout = function (timer) {
 	var minutes = (timer.timeout / 60) | 0;
 	var seconds = timer.timeout - (minutes * 60);
@@ -6644,7 +6645,7 @@ var author$project$Pomodoro$viewTimerTimeout = function (timer) {
 		elm$html$Html$h1,
 		_List_fromArray(
 			[
-				elm$html$Html$Attributes$class('display-2 timeout')
+				elm$html$Html$Attributes$class('timeout')
 			]),
 		_List_fromArray(
 			[

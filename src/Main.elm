@@ -85,8 +85,8 @@ viewHeader =
     nav [ class "header" ]
         [ div [ class "container" ]
             [ div [ class "row" ]
-                [ div [ class "col-10" ]
-                    [ h1 [] [ text "Conductor" ]
+                [ div [ class "col-10 d-flex align-items-center" ]
+                    [ h2 [] [ text "Conductor" ]
                     ]
                 , div [ class "col-2 d-flex align-items-center justify-content-end" ]
                     [ a
@@ -259,7 +259,7 @@ viewTimerTimeout timer =
         seconds =
             timer.timeout - (minutes * 60)
     in
-    h1 [ class "display-2 timeout" ]
+    h1 [ class "timeout" ]
         [ text (formatMinutesOrSeconds minutes)
         , text ":"
         , text (formatMinutesOrSeconds seconds)
