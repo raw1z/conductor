@@ -88,7 +88,7 @@ viewHeader =
                 [ div [ class "col-10" ]
                     [ h1 [] [ text "Conductor" ]
                     ]
-                , div [ class "col-2 d-flex align-items-center" ]
+                , div [ class "col-2 d-flex align-items-center justify-content-end" ]
                     [ a
                         [ href "#"
                         , id "new-task-btn"
@@ -131,22 +131,74 @@ viewNewTask model =
                 ]
 
 
-viewTaskActions : Task -> Html Msg
-viewTaskActions task =
-    div [ class "actions d-flex justify-content-center align-items-center" ]
-        [ button
-            [ class "btn start-task-btn"
-            , onClick (UpdateTimer task)
-            ]
-            [ i [ class "fa fa-play" ] []
-            ]
-        , button
-            [ class "btn remove-task-btn"
-            , onClick (RemoveTask task)
-            ]
-            [ i [ class "fa fa-remove" ] []
-            ]
+viewInactiveTaskActions : Task -> List (Html Msg)
+viewInactiveTaskActions task =
+    [ button
+        [ class "btn start-task-btn"
+        , onClick (UpdateTimer task)
         ]
+        [ i [ class "fa fa-play" ] []
+        ]
+    , button
+        [ class "btn remove-task-btn"
+        , onClick (RemoveTask task)
+        ]
+        [ i [ class "fa fa-remove" ] []
+        ]
+    ]
+
+
+viewActiveTaskActions : Task -> List (Html Msg)
+viewActiveTaskActions task =
+    [ button
+        [ class "btn stop-task-btn"
+        , onClick RemoveTimer
+        ]
+        [ i [ class "fa fa-stop" ] []
+        ]
+    ]
+
+
+isTimerOn : Model -> Bool
+isTimerOn model =
+    case model.timer of
+        Just _ ->
+            True
+
+        Nothing ->
+            False
+
+
+isActiveTask : Model -> Task -> Bool
+isActiveTask model task =
+    case model.timer of
+        Just timer ->
+            if timer.task.id == task.id then
+                True
+
+            else
+                False
+
+        Nothing ->
+            False
+
+
+viewTaskActions : Model -> Task -> Html Msg
+viewTaskActions model task =
+    let
+        buttons =
+            if isTimerOn model then
+                if isActiveTask model task then
+                    viewActiveTaskActions task
+
+                else
+                    []
+
+            else
+                viewInactiveTaskActions task
+    in
+    div [ class "actions d-flex justify-content-center align-items-center" ]
+        buttons
 
 
 viewTask : Model -> Task -> Html Msg
@@ -166,7 +218,7 @@ viewTask model task =
             , onClick (SelectTask task)
             ]
             [ text task.description ]
-        , viewTaskActions task
+        , viewTaskActions model task
         ]
 
 
@@ -255,6 +307,7 @@ type Msg
     | Tick Time.Posix
     | FocusResult (Result Browser.Dom.Error ())
     | OnKeyPressed String
+    | RemoveTimer
 
 
 getNewTaskId : Model -> Id
@@ -560,6 +613,11 @@ update msg model =
 
                 Just _ ->
                     ( model, Cmd.none )
+
+        RemoveTimer ->
+            ( { model | timer = Nothing }
+            , Cmd.none
+            )
 
 
 keyDecoder : Decoder String

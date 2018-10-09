@@ -6179,7 +6179,7 @@ var author$project$Pomodoro$update = F2(
 					elm$core$Platform$Cmd$none);
 			case 'Tick':
 				return author$project$Pomodoro$updateTimerAtTick(model);
-			default:
+			case 'OnKeyPressed':
 				var key = msg.a;
 				var _n1 = model.newTask;
 				if (_n1.$ === 'Nothing') {
@@ -6187,6 +6187,12 @@ var author$project$Pomodoro$update = F2(
 				} else {
 					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 				}
+			default:
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{timer: elm$core$Maybe$Nothing}),
+					elm$core$Platform$Cmd$none);
 		}
 	});
 var elm$html$Html$a = _VirtualDom_node('a');
@@ -6272,7 +6278,7 @@ var author$project$Pomodoro$viewHeader = A2(
 							elm$html$Html$div,
 							_List_fromArray(
 								[
-									elm$html$Html$Attributes$class('col-2 d-flex align-items-center')
+									elm$html$Html$Attributes$class('col-2 d-flex align-items-center justify-content-end')
 								]),
 							_List_fromArray(
 								[
@@ -6428,56 +6434,102 @@ var author$project$Pomodoro$viewNewTask = function (model) {
 var author$project$Pomodoro$SelectTask = function (a) {
 	return {$: 'SelectTask', a: a};
 };
+var author$project$Pomodoro$isActiveTask = F2(
+	function (model, task) {
+		var _n0 = model.timer;
+		if (_n0.$ === 'Just') {
+			var timer = _n0.a;
+			return _Utils_eq(timer.task.id, task.id) ? true : false;
+		} else {
+			return false;
+		}
+	});
+var author$project$Pomodoro$isTimerOn = function (model) {
+	var _n0 = model.timer;
+	if (_n0.$ === 'Just') {
+		return true;
+	} else {
+		return false;
+	}
+};
+var author$project$Pomodoro$RemoveTimer = {$: 'RemoveTimer'};
+var author$project$Pomodoro$viewActiveTaskActions = function (task) {
+	return _List_fromArray(
+		[
+			A2(
+			elm$html$Html$button,
+			_List_fromArray(
+				[
+					elm$html$Html$Attributes$class('btn stop-task-btn'),
+					elm$html$Html$Events$onClick(author$project$Pomodoro$RemoveTimer)
+				]),
+			_List_fromArray(
+				[
+					A2(
+					elm$html$Html$i,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$class('fa fa-stop')
+						]),
+					_List_Nil)
+				]))
+		]);
+};
 var author$project$Pomodoro$RemoveTask = function (a) {
 	return {$: 'RemoveTask', a: a};
 };
-var author$project$Pomodoro$viewTaskActions = function (task) {
-	return A2(
-		elm$html$Html$div,
-		_List_fromArray(
-			[
-				elm$html$Html$Attributes$class('actions d-flex justify-content-center align-items-center')
-			]),
-		_List_fromArray(
-			[
-				A2(
-				elm$html$Html$button,
-				_List_fromArray(
-					[
-						elm$html$Html$Attributes$class('btn start-task-btn'),
-						elm$html$Html$Events$onClick(
-						author$project$Pomodoro$UpdateTimer(task))
-					]),
-				_List_fromArray(
-					[
-						A2(
-						elm$html$Html$i,
-						_List_fromArray(
-							[
-								elm$html$Html$Attributes$class('fa fa-play')
-							]),
-						_List_Nil)
-					])),
-				A2(
-				elm$html$Html$button,
-				_List_fromArray(
-					[
-						elm$html$Html$Attributes$class('btn remove-task-btn'),
-						elm$html$Html$Events$onClick(
-						author$project$Pomodoro$RemoveTask(task))
-					]),
-				_List_fromArray(
-					[
-						A2(
-						elm$html$Html$i,
-						_List_fromArray(
-							[
-								elm$html$Html$Attributes$class('fa fa-remove')
-							]),
-						_List_Nil)
-					]))
-			]));
+var author$project$Pomodoro$viewInactiveTaskActions = function (task) {
+	return _List_fromArray(
+		[
+			A2(
+			elm$html$Html$button,
+			_List_fromArray(
+				[
+					elm$html$Html$Attributes$class('btn start-task-btn'),
+					elm$html$Html$Events$onClick(
+					author$project$Pomodoro$UpdateTimer(task))
+				]),
+			_List_fromArray(
+				[
+					A2(
+					elm$html$Html$i,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$class('fa fa-play')
+						]),
+					_List_Nil)
+				])),
+			A2(
+			elm$html$Html$button,
+			_List_fromArray(
+				[
+					elm$html$Html$Attributes$class('btn remove-task-btn'),
+					elm$html$Html$Events$onClick(
+					author$project$Pomodoro$RemoveTask(task))
+				]),
+			_List_fromArray(
+				[
+					A2(
+					elm$html$Html$i,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$class('fa fa-remove')
+						]),
+					_List_Nil)
+				]))
+		]);
 };
+var author$project$Pomodoro$viewTaskActions = F2(
+	function (model, task) {
+		var buttons = author$project$Pomodoro$isTimerOn(model) ? (A2(author$project$Pomodoro$isActiveTask, model, task) ? author$project$Pomodoro$viewActiveTaskActions(task) : _List_Nil) : author$project$Pomodoro$viewInactiveTaskActions(task);
+		return A2(
+			elm$html$Html$div,
+			_List_fromArray(
+				[
+					elm$html$Html$Attributes$class('actions d-flex justify-content-center align-items-center')
+				]),
+			buttons);
+	});
 var elm$html$Html$li = _VirtualDom_node('li');
 var elm$html$Html$Events$onDoubleClick = function (msg) {
 	return A2(
@@ -6510,7 +6562,7 @@ var author$project$Pomodoro$viewTask = F2(
 						[
 							elm$html$Html$text(task.description)
 						])),
-					author$project$Pomodoro$viewTaskActions(task)
+					A2(author$project$Pomodoro$viewTaskActions, model, task)
 				]));
 	});
 var elm$html$Html$ul = _VirtualDom_node('ul');

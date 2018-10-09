@@ -22077,7 +22077,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 				return _Utils_Tuple2(_Utils_update(model, { selectedTaskId: task.id }), elm$core$Platform$Cmd$none);
 			case 'Tick':
 				return author$project$Pomodoro$updateTimerAtTick(model);
-			default:
+			case 'OnKeyPressed':
 				var key = msg.a;
 				var _n1 = model.newTask;
 				if (_n1.$ === 'Nothing') {
@@ -22085,6 +22085,8 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 				} else {
 					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 				}
+			default:
+				return _Utils_Tuple2(_Utils_update(model, { timer: elm$core$Maybe$Nothing }), elm$core$Platform$Cmd$none);
 		}
 	});
 	var elm$html$Html$a = _VirtualDom_node('a');
@@ -22112,7 +22114,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 	var elm$html$Html$Events$onClick = function elm$html$Html$Events$onClick(msg) {
 		return A2(elm$html$Html$Events$on, 'click', elm$json$Json$Decode$succeed(msg));
 	};
-	var author$project$Pomodoro$viewHeader = A2(elm$html$Html$nav, _List_fromArray([elm$html$Html$Attributes$class('header')]), _List_fromArray([A2(elm$html$Html$div, _List_fromArray([elm$html$Html$Attributes$class('container')]), _List_fromArray([A2(elm$html$Html$div, _List_fromArray([elm$html$Html$Attributes$class('row')]), _List_fromArray([A2(elm$html$Html$div, _List_fromArray([elm$html$Html$Attributes$class('col-10')]), _List_fromArray([A2(elm$html$Html$h1, _List_Nil, _List_fromArray([elm$html$Html$text('Conductor')]))])), A2(elm$html$Html$div, _List_fromArray([elm$html$Html$Attributes$class('col-2 d-flex align-items-center')]), _List_fromArray([A2(elm$html$Html$a, _List_fromArray([elm$html$Html$Attributes$href('#'), elm$html$Html$Attributes$id('new-task-btn'), elm$html$Html$Events$onClick(author$project$Pomodoro$UpdateTask(''))]), _List_fromArray([A2(elm$html$Html$i, _List_fromArray([elm$html$Html$Attributes$class('fa fa-plus fa-2x')]), _List_Nil)]))]))]))]))]));
+	var author$project$Pomodoro$viewHeader = A2(elm$html$Html$nav, _List_fromArray([elm$html$Html$Attributes$class('header')]), _List_fromArray([A2(elm$html$Html$div, _List_fromArray([elm$html$Html$Attributes$class('container')]), _List_fromArray([A2(elm$html$Html$div, _List_fromArray([elm$html$Html$Attributes$class('row')]), _List_fromArray([A2(elm$html$Html$div, _List_fromArray([elm$html$Html$Attributes$class('col-10')]), _List_fromArray([A2(elm$html$Html$h1, _List_Nil, _List_fromArray([elm$html$Html$text('Conductor')]))])), A2(elm$html$Html$div, _List_fromArray([elm$html$Html$Attributes$class('col-2 d-flex align-items-center justify-content-end')]), _List_fromArray([A2(elm$html$Html$a, _List_fromArray([elm$html$Html$Attributes$href('#'), elm$html$Html$Attributes$id('new-task-btn'), elm$html$Html$Events$onClick(author$project$Pomodoro$UpdateTask(''))]), _List_fromArray([A2(elm$html$Html$i, _List_fromArray([elm$html$Html$Attributes$class('fa fa-plus fa-2x')]), _List_Nil)]))]))]))]))]));
 	var author$project$Pomodoro$SaveTask = { $: 'SaveTask' };
 	var elm$html$Html$button = _VirtualDom_node('button');
 	var elm$html$Html$form = _VirtualDom_node('form');
@@ -22165,19 +22167,44 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 	var author$project$Pomodoro$SelectTask = function author$project$Pomodoro$SelectTask(a) {
 		return { $: 'SelectTask', a: a };
 	};
+	var author$project$Pomodoro$isActiveTask = F2(function (model, task) {
+		var _n0 = model.timer;
+		if (_n0.$ === 'Just') {
+			var timer = _n0.a;
+			return _Utils_eq(timer.task.id, task.id) ? true : false;
+		} else {
+			return false;
+		}
+	});
+	var author$project$Pomodoro$isTimerOn = function author$project$Pomodoro$isTimerOn(model) {
+		var _n0 = model.timer;
+		if (_n0.$ === 'Just') {
+			return true;
+		} else {
+			return false;
+		}
+	};
+	var author$project$Pomodoro$RemoveTimer = { $: 'RemoveTimer' };
+	var author$project$Pomodoro$viewActiveTaskActions = function author$project$Pomodoro$viewActiveTaskActions(task) {
+		return _List_fromArray([A2(elm$html$Html$button, _List_fromArray([elm$html$Html$Attributes$class('btn stop-task-btn'), elm$html$Html$Events$onClick(author$project$Pomodoro$RemoveTimer)]), _List_fromArray([A2(elm$html$Html$i, _List_fromArray([elm$html$Html$Attributes$class('fa fa-stop')]), _List_Nil)]))]);
+	};
 	var author$project$Pomodoro$RemoveTask = function author$project$Pomodoro$RemoveTask(a) {
 		return { $: 'RemoveTask', a: a };
 	};
-	var author$project$Pomodoro$viewTaskActions = function author$project$Pomodoro$viewTaskActions(task) {
-		return A2(elm$html$Html$div, _List_fromArray([elm$html$Html$Attributes$class('actions d-flex justify-content-center align-items-center')]), _List_fromArray([A2(elm$html$Html$button, _List_fromArray([elm$html$Html$Attributes$class('btn start-task-btn'), elm$html$Html$Events$onClick(author$project$Pomodoro$UpdateTimer(task))]), _List_fromArray([A2(elm$html$Html$i, _List_fromArray([elm$html$Html$Attributes$class('fa fa-play')]), _List_Nil)])), A2(elm$html$Html$button, _List_fromArray([elm$html$Html$Attributes$class('btn remove-task-btn'), elm$html$Html$Events$onClick(author$project$Pomodoro$RemoveTask(task))]), _List_fromArray([A2(elm$html$Html$i, _List_fromArray([elm$html$Html$Attributes$class('fa fa-remove')]), _List_Nil)]))]));
+	var author$project$Pomodoro$viewInactiveTaskActions = function author$project$Pomodoro$viewInactiveTaskActions(task) {
+		return _List_fromArray([A2(elm$html$Html$button, _List_fromArray([elm$html$Html$Attributes$class('btn start-task-btn'), elm$html$Html$Events$onClick(author$project$Pomodoro$UpdateTimer(task))]), _List_fromArray([A2(elm$html$Html$i, _List_fromArray([elm$html$Html$Attributes$class('fa fa-play')]), _List_Nil)])), A2(elm$html$Html$button, _List_fromArray([elm$html$Html$Attributes$class('btn remove-task-btn'), elm$html$Html$Events$onClick(author$project$Pomodoro$RemoveTask(task))]), _List_fromArray([A2(elm$html$Html$i, _List_fromArray([elm$html$Html$Attributes$class('fa fa-remove')]), _List_Nil)]))]);
 	};
+	var author$project$Pomodoro$viewTaskActions = F2(function (model, task) {
+		var buttons = author$project$Pomodoro$isTimerOn(model) ? A2(author$project$Pomodoro$isActiveTask, model, task) ? author$project$Pomodoro$viewActiveTaskActions(task) : _List_Nil : author$project$Pomodoro$viewInactiveTaskActions(task);
+		return A2(elm$html$Html$div, _List_fromArray([elm$html$Html$Attributes$class('actions d-flex justify-content-center align-items-center')]), buttons);
+	});
 	var elm$html$Html$li = _VirtualDom_node('li');
 	var elm$html$Html$Events$onDoubleClick = function elm$html$Html$Events$onDoubleClick(msg) {
 		return A2(elm$html$Html$Events$on, 'dblclick', elm$json$Json$Decode$succeed(msg));
 	};
 	var author$project$Pomodoro$viewTask = F2(function (model, task) {
 		var classNames = _Utils_eq(model.selectedTaskId, task.id) ? 'task d-flex active' : 'task d-flex';
-		return A2(elm$html$Html$li, _List_fromArray([elm$html$Html$Attributes$class(classNames)]), _List_fromArray([A2(elm$html$Html$div, _List_fromArray([elm$html$Html$Attributes$class('desc flex-fill'), elm$html$Html$Events$onDoubleClick(author$project$Pomodoro$UpdateTimer(task)), elm$html$Html$Events$onClick(author$project$Pomodoro$SelectTask(task))]), _List_fromArray([elm$html$Html$text(task.description)])), author$project$Pomodoro$viewTaskActions(task)]));
+		return A2(elm$html$Html$li, _List_fromArray([elm$html$Html$Attributes$class(classNames)]), _List_fromArray([A2(elm$html$Html$div, _List_fromArray([elm$html$Html$Attributes$class('desc flex-fill'), elm$html$Html$Events$onDoubleClick(author$project$Pomodoro$UpdateTimer(task)), elm$html$Html$Events$onClick(author$project$Pomodoro$SelectTask(task))]), _List_fromArray([elm$html$Html$text(task.description)])), A2(author$project$Pomodoro$viewTaskActions, model, task)]));
 	});
 	var elm$html$Html$ul = _VirtualDom_node('ul');
 	var author$project$Pomodoro$viewTaskList = function author$project$Pomodoro$viewTaskList(model) {
