@@ -5801,9 +5801,14 @@ var author$project$Pomodoro$subscriptions = function (model) {
 var author$project$Pomodoro$FocusResult = function (a) {
 	return {$: 'FocusResult', a: a};
 };
+var author$project$Pomodoro$Inactive = {$: 'Inactive'};
 var author$project$Pomodoro$Task = F3(
 	function (id, description, done) {
 		return {description: description, done: done, id: id};
+	});
+var author$project$Pomodoro$Timer = F4(
+	function (task, initialValue, timeout, status) {
+		return {initialValue: initialValue, status: status, task: task, timeout: timeout};
 	});
 var author$project$Pomodoro$getNewTaskId = function (model) {
 	return model.lastNewId + 1;
@@ -5830,13 +5835,17 @@ var author$project$Pomodoro$addNewTask = function (model) {
 var author$project$Pomodoro$UpdateTask = function (a) {
 	return {$: 'UpdateTask', a: a};
 };
-var author$project$Pomodoro$Inactive = {$: 'Inactive'};
 var author$project$Pomodoro$isActiveTask = F2(
 	function (model, task) {
 		var _n0 = model.timer;
 		if (_n0.$ === 'Just') {
 			var timer = _n0.a;
-			return _Utils_eq(timer.status, author$project$Pomodoro$Inactive) ? false : (_Utils_eq(timer.task.id, task.id) ? true : false);
+			var _n1 = timer.status;
+			if (_n1.$ === 'Work') {
+				return _Utils_eq(timer.task.id, task.id) ? true : false;
+			} else {
+				return false;
+			}
 		} else {
 			return false;
 		}
@@ -5953,7 +5962,9 @@ var author$project$Pomodoro$send = function (msg) {
 		elm$core$Basics$identity,
 		elm$core$Task$succeed(msg));
 };
-var author$project$Pomodoro$RemoveTimer = {$: 'RemoveTimer'};
+var author$project$Pomodoro$StopTimer = function (a) {
+	return {$: 'StopTimer', a: a};
+};
 var author$project$Pomodoro$UpdateTimer = function (a) {
 	return {$: 'UpdateTimer', a: a};
 };
@@ -5963,7 +5974,8 @@ var author$project$Pomodoro$toggleTimerForSelectedTask = F2(
 			return elm$core$Platform$Cmd$none;
 		} else {
 			var selectedTask = maybeSelectedTask.a;
-			return A2(author$project$Pomodoro$isActiveTask, model, selectedTask) ? author$project$Pomodoro$send(author$project$Pomodoro$RemoveTimer) : author$project$Pomodoro$send(
+			return A2(author$project$Pomodoro$isActiveTask, model, selectedTask) ? author$project$Pomodoro$send(
+				author$project$Pomodoro$StopTimer(selectedTask)) : author$project$Pomodoro$send(
 				author$project$Pomodoro$UpdateTimer(selectedTask));
 		}
 	});
@@ -6000,22 +6012,17 @@ var author$project$Pomodoro$processKey = F2(
 				return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 		}
 	});
-var author$project$Pomodoro$Timer = F5(
-	function (task, initialValue, timeout, status, statusCount) {
-		return {initialValue: initialValue, status: status, statusCount: statusCount, task: task, timeout: timeout};
-	});
 var author$project$Pomodoro$Work = function (a) {
 	return {$: 'Work', a: a};
 };
 var author$project$Pomodoro$workTimeout = 1500;
 var author$project$Pomodoro$createTimer = function (task) {
-	return A5(
+	return A4(
 		author$project$Pomodoro$Timer,
 		task,
 		author$project$Pomodoro$workTimeout,
 		author$project$Pomodoro$workTimeout,
-		author$project$Pomodoro$Work(1),
-		1);
+		author$project$Pomodoro$Work(1));
 };
 var author$project$Pomodoro$updateExistingTimer = F2(
 	function (timer, task) {
@@ -6032,6 +6039,15 @@ var author$project$Pomodoro$updateExistingTimer = F2(
 						timeout: author$project$Pomodoro$workTimeout
 					});
 			case 'LongPause':
+				return _Utils_update(
+					timer,
+					{
+						initialValue: author$project$Pomodoro$workTimeout,
+						status: author$project$Pomodoro$Work(1),
+						task: task,
+						timeout: author$project$Pomodoro$workTimeout
+					});
+			case 'Inactive':
 				return _Utils_update(
 					timer,
 					{
@@ -6223,10 +6239,14 @@ var author$project$Pomodoro$update = F2(
 					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 				}
 			default:
+				var task = msg.a;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{timer: elm$core$Maybe$Nothing}),
+						{
+							timer: elm$core$Maybe$Just(
+								A4(author$project$Pomodoro$Timer, task, 0, 0, author$project$Pomodoro$Inactive))
+						}),
 					elm$core$Platform$Cmd$none);
 		}
 	});
@@ -6485,7 +6505,8 @@ var author$project$Pomodoro$viewActiveTaskActions = function (task) {
 			_List_fromArray(
 				[
 					elm$html$Html$Attributes$class('btn stop-task-btn'),
-					elm$html$Html$Events$onClick(author$project$Pomodoro$RemoveTimer)
+					elm$html$Html$Events$onClick(
+					author$project$Pomodoro$StopTimer(task))
 				]),
 			_List_fromArray(
 				[
@@ -6762,7 +6783,14 @@ var author$project$ProgressRing$viewProgress = F3(
 				]));
 	});
 var author$project$Pomodoro$viewTimerProgress = function (timer) {
-	var progress = (timer.initialValue - timer.timeout) / timer.initialValue;
+	var progress = function () {
+		var _n0 = timer.status;
+		if (_n0.$ === 'Inactive') {
+			return 0.0;
+		} else {
+			return (timer.initialValue - timer.timeout) / timer.initialValue;
+		}
+	}();
 	return A2(
 		elm$html$Html$div,
 		_List_fromArray(

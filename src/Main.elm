@@ -38,7 +38,6 @@ type alias Timer =
     , initialValue : Int
     , timeout : Int
     , status : TimerStatus
-    , statusCount : Int
     }
 
 
@@ -156,7 +155,7 @@ viewActiveTaskActions : Task -> List (Html Msg)
 viewActiveTaskActions task =
     [ button
         [ class "btn stop-task-btn"
-        , onClick RemoveTimer
+        , onClick (StopTimer task)
         ]
         [ i [ class "fa fa-stop" ] []
         ]
@@ -177,14 +176,16 @@ isActiveTask : Model -> Task -> Bool
 isActiveTask model task =
     case model.timer of
         Just timer ->
-            if timer.status == Inactive then
-                False
+            case timer.status of
+                Work _ ->
+                    if timer.task.id == task.id then
+                        True
 
-            else if timer.task.id == task.id then
-                True
+                    else
+                        False
 
-            else
-                False
+                _ ->
+                    False
 
         Nothing ->
             False
@@ -245,7 +246,12 @@ viewTimerProgress : Timer -> Html Msg
 viewTimerProgress timer =
     let
         progress =
-            toFloat (timer.initialValue - timer.timeout) / toFloat timer.initialValue
+            case timer.status of
+                Inactive ->
+                    0.0
+
+                _ ->
+                    toFloat (timer.initialValue - timer.timeout) / toFloat timer.initialValue
     in
     div [ class "timer-progress" ]
         [ div [ class "timer-progress-ring" ]
@@ -335,7 +341,7 @@ type Msg
     | Tick Time.Posix
     | FocusResult (Result Browser.Dom.Error ())
     | OnKeyPressed String
-    | RemoveTimer
+    | StopTimer Task
 
 
 getNewTaskId : Model -> Id
@@ -379,7 +385,7 @@ removeTask model taskToRemove =
 
 createTimer : Task -> Timer
 createTimer task =
-    Timer task workTimeout workTimeout (Work 1) 1
+    Timer task workTimeout workTimeout (Work 1)
 
 
 updateExistingTimer : Timer -> Task -> Timer
@@ -394,6 +400,14 @@ updateExistingTimer timer task =
             }
 
         LongPause ->
+            { timer
+                | status = Work 1
+                , initialValue = workTimeout
+                , timeout = workTimeout
+                , task = task
+            }
+
+        Inactive ->
             { timer
                 | status = Work 1
                 , initialValue = workTimeout
@@ -592,7 +606,7 @@ toggleTimerForSelectedTask model maybeSelectedTask =
 
         Just selectedTask ->
             if isActiveTask model selectedTask then
-                send RemoveTimer
+                send (StopTimer selectedTask)
 
             else
                 send (UpdateTimer selectedTask)
@@ -674,8 +688,8 @@ update msg model =
                 Just _ ->
                     ( model, Cmd.none )
 
-        RemoveTimer ->
-            ( { model | timer = Nothing }
+        StopTimer task ->
+            ( { model | timer = Just (Timer task 0 0 Inactive) }
             , Cmd.none
             )
 

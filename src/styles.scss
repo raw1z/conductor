@@ -126,21 +126,38 @@ body {
 
 .timer {
   transition: background-color 0.5s;
+  border-bottom: thin solid $gray-700;
 
   &.timer-work {
-    background-color: $danger;
+    $background-color: $danger;
+    background-color: $background-color;
+    .task-description {
+      background-color: darken($background-color, 3);
+    }
   }
 
   &.timer-pause {
-    background-color: $success;
+    $background-color: $success;
+    background-color: $background-color;
+    .task-description {
+      background-color: darken($background-color, 3);
+    }
   }
 
   &.timer-long-pause {
-    background-color: $primary;
+    $background-color: $primary;
+    background-color: $background-color;
+    .task-description {
+      background-color: darken($background-color, 5);
+    }
   }
 
   &.timer-inactive {
-    background-color: $dark;
+    $background-color: $dark;
+    background-color: $background-color;
+    .task-description {
+      background-color: darken($background-color, 2);
+    }
   }
 
   .timeout {
@@ -153,7 +170,7 @@ body {
     text-align: center;
     font-size: $h4-font-size;
     font-weight: $font-weight-light;
-    background-color: transparentize($dark, 0.9);
+    background-color: transparentize($dark, 0.8);
     padding: {
       top: 0.5rem;
       bottom: 0.5rem;
