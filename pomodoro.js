@@ -2298,6 +2298,52 @@ function _Platform_mergeExportsDebug(moduleName, obj, exports)
 
 
 
+function _Time_now(millisToPosix)
+{
+	return _Scheduler_binding(function(callback)
+	{
+		callback(_Scheduler_succeed(millisToPosix(Date.now())));
+	});
+}
+
+var _Time_setInterval = F2(function(interval, task)
+{
+	return _Scheduler_binding(function(callback)
+	{
+		var id = setInterval(function() { _Scheduler_rawSpawn(task); }, interval);
+		return function() { clearInterval(id); };
+	});
+});
+
+function _Time_here()
+{
+	return _Scheduler_binding(function(callback)
+	{
+		callback(_Scheduler_succeed(
+			A2(elm$time$Time$customZone, -(new Date().getTimezoneOffset()), _List_Nil)
+		));
+	});
+}
+
+
+function _Time_getZoneName()
+{
+	return _Scheduler_binding(function(callback)
+	{
+		try
+		{
+			var name = elm$time$Time$Name(Intl.DateTimeFormat().resolvedOptions().timeZone);
+		}
+		catch (e)
+		{
+			var name = elm$time$Time$Offset(new Date().getTimezoneOffset());
+		}
+		callback(_Scheduler_succeed(name));
+	});
+}
+
+
+
 
 // HELPERS
 
@@ -4288,52 +4334,6 @@ function _Browser_load(url)
 
 
 
-function _Time_now(millisToPosix)
-{
-	return _Scheduler_binding(function(callback)
-	{
-		callback(_Scheduler_succeed(millisToPosix(Date.now())));
-	});
-}
-
-var _Time_setInterval = F2(function(interval, task)
-{
-	return _Scheduler_binding(function(callback)
-	{
-		var id = setInterval(function() { _Scheduler_rawSpawn(task); }, interval);
-		return function() { clearInterval(id); };
-	});
-});
-
-function _Time_here()
-{
-	return _Scheduler_binding(function(callback)
-	{
-		callback(_Scheduler_succeed(
-			A2(elm$time$Time$customZone, -(new Date().getTimezoneOffset()), _List_Nil)
-		));
-	});
-}
-
-
-function _Time_getZoneName()
-{
-	return _Scheduler_binding(function(callback)
-	{
-		try
-		{
-			var name = elm$time$Time$Name(Intl.DateTimeFormat().resolvedOptions().timeZone);
-		}
-		catch (e)
-		{
-			var name = elm$time$Time$Offset(new Date().getTimezoneOffset());
-		}
-		callback(_Scheduler_succeed(name));
-	});
-}
-
-
-
 var _Bitwise_and = F2(function(a, b)
 {
 	return a & b;
@@ -4368,6 +4368,21 @@ var _Bitwise_shiftRightZfBy = F2(function(offset, a)
 {
 	return a >>> offset;
 });
+var author$project$Timer$Model = F5(
+	function (label, initialValue, timeout, status, isActive) {
+		return {initialValue: initialValue, isActive: isActive, label: label, status: status, timeout: timeout};
+	});
+var author$project$Timer$Ready = function (a) {
+	return {$: 'Ready', a: a};
+};
+var elm$core$Basics$False = {$: 'False'};
+var author$project$Timer$init = A5(
+	author$project$Timer$Model,
+	'Ready',
+	0,
+	0,
+	author$project$Timer$Ready(1),
+	false);
 var elm$core$Maybe$Nothing = {$: 'Nothing'};
 var elm$core$Basics$EQ = {$: 'EQ'};
 var elm$core$Basics$LT = {$: 'LT'};
@@ -4449,8 +4464,7 @@ var elm$core$Set$toList = function (_n0) {
 	var dict = _n0.a;
 	return elm$core$Dict$keys(dict);
 };
-var author$project$Pomodoro$initialModel = {lastNewId: 0, newTask: elm$core$Maybe$Nothing, selectedTaskId: 0, tasks: _List_Nil, timer: elm$core$Maybe$Nothing};
-var elm$core$Basics$False = {$: 'False'};
+var author$project$Pomodoro$initialModel = {lastNewId: 0, newTask: elm$core$Maybe$Nothing, selectedTaskId: 0, tasks: _List_Nil, timer: author$project$Timer$init};
 var elm$core$Basics$True = {$: 'True'};
 var elm$core$Result$isOk = function (result) {
 	if (result.$ === 'Ok') {
@@ -4852,83 +4866,384 @@ var author$project$Pomodoro$init = function (_n0) {
 var author$project$Pomodoro$OnKeyPressed = function (a) {
 	return {$: 'OnKeyPressed', a: a};
 };
-var author$project$Pomodoro$Tick = function (a) {
-	return {$: 'Tick', a: a};
+var author$project$Pomodoro$TimerMsg = function (a) {
+	return {$: 'TimerMsg', a: a};
 };
 var elm$json$Json$Decode$field = _Json_decodeField;
 var elm$json$Json$Decode$string = _Json_decodeString;
 var author$project$Pomodoro$keyDecoder = A2(elm$json$Json$Decode$field, 'key', elm$json$Json$Decode$string);
-var elm$browser$Browser$Events$Document = {$: 'Document'};
-var elm$browser$Browser$Events$MySub = F3(
-	function (a, b, c) {
-		return {$: 'MySub', a: a, b: b, c: c};
-	});
-var elm$browser$Browser$Events$State = F2(
-	function (subs, pids) {
-		return {pids: pids, subs: subs};
-	});
-var elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
-var elm$core$Dict$empty = elm$core$Dict$RBEmpty_elm_builtin;
-var elm$core$Task$succeed = _Scheduler_succeed;
-var elm$browser$Browser$Events$init = elm$core$Task$succeed(
-	A2(elm$browser$Browser$Events$State, _List_Nil, elm$core$Dict$empty));
-var elm$browser$Browser$Events$nodeToKey = function (node) {
-	if (node.$ === 'Document') {
-		return 'd_';
-	} else {
-		return 'w_';
-	}
-};
-var elm$browser$Browser$Events$addKey = function (sub) {
-	var node = sub.a;
-	var name = sub.b;
-	return _Utils_Tuple2(
-		_Utils_ap(
-			elm$browser$Browser$Events$nodeToKey(node),
-			name),
-		sub);
-};
-var elm$browser$Browser$Events$Event = F2(
-	function (key, event) {
-		return {event: event, key: key};
-	});
-var elm$core$Platform$sendToSelf = _Platform_sendToSelf;
-var elm$core$Task$andThen = _Scheduler_andThen;
-var elm$core$Task$map = F2(
-	function (func, taskA) {
-		return A2(
-			elm$core$Task$andThen,
-			function (a) {
-				return elm$core$Task$succeed(
-					func(a));
-			},
-			taskA);
-	});
-var elm$browser$Browser$External = function (a) {
-	return {$: 'External', a: a};
-};
-var elm$browser$Browser$Internal = function (a) {
-	return {$: 'Internal', a: a};
-};
-var elm$browser$Browser$Dom$NotFound = function (a) {
-	return {$: 'NotFound', a: a};
-};
-var elm$core$Basics$never = function (_n0) {
-	never:
-	while (true) {
-		var nvr = _n0.a;
-		var $temp$_n0 = nvr;
-		_n0 = $temp$_n0;
-		continue never;
-	}
+var author$project$Timer$Tick = function (a) {
+	return {$: 'Tick', a: a};
 };
 var elm$core$Basics$identity = function (x) {
 	return x;
 };
-var elm$core$Task$Perform = function (a) {
-	return {$: 'Perform', a: a};
+var elm$core$Platform$Sub$batch = _Platform_batch;
+var elm$core$Platform$Sub$none = elm$core$Platform$Sub$batch(_List_Nil);
+var elm$time$Time$Every = F2(
+	function (a, b) {
+		return {$: 'Every', a: a, b: b};
+	});
+var elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
+var elm$core$Dict$empty = elm$core$Dict$RBEmpty_elm_builtin;
+var elm$core$Task$succeed = _Scheduler_succeed;
+var elm$time$Time$State = F2(
+	function (taggers, processes) {
+		return {processes: processes, taggers: taggers};
+	});
+var elm$time$Time$init = elm$core$Task$succeed(
+	A2(elm$time$Time$State, elm$core$Dict$empty, elm$core$Dict$empty));
+var elm$core$Dict$Black = {$: 'Black'};
+var elm$core$Dict$RBNode_elm_builtin = F5(
+	function (a, b, c, d, e) {
+		return {$: 'RBNode_elm_builtin', a: a, b: b, c: c, d: d, e: e};
+	});
+var elm$core$Basics$compare = _Utils_compare;
+var elm$core$Dict$Red = {$: 'Red'};
+var elm$core$Dict$balance = F5(
+	function (color, key, value, left, right) {
+		if ((right.$ === 'RBNode_elm_builtin') && (right.a.$ === 'Red')) {
+			var _n1 = right.a;
+			var rK = right.b;
+			var rV = right.c;
+			var rLeft = right.d;
+			var rRight = right.e;
+			if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) {
+				var _n3 = left.a;
+				var lK = left.b;
+				var lV = left.c;
+				var lLeft = left.d;
+				var lRight = left.e;
+				return A5(
+					elm$core$Dict$RBNode_elm_builtin,
+					elm$core$Dict$Red,
+					key,
+					value,
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, lK, lV, lLeft, lRight),
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, rK, rV, rLeft, rRight));
+			} else {
+				return A5(
+					elm$core$Dict$RBNode_elm_builtin,
+					color,
+					rK,
+					rV,
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Red, key, value, left, rLeft),
+					rRight);
+			}
+		} else {
+			if ((((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) && (left.d.$ === 'RBNode_elm_builtin')) && (left.d.a.$ === 'Red')) {
+				var _n5 = left.a;
+				var lK = left.b;
+				var lV = left.c;
+				var _n6 = left.d;
+				var _n7 = _n6.a;
+				var llK = _n6.b;
+				var llV = _n6.c;
+				var llLeft = _n6.d;
+				var llRight = _n6.e;
+				var lRight = left.e;
+				return A5(
+					elm$core$Dict$RBNode_elm_builtin,
+					elm$core$Dict$Red,
+					lK,
+					lV,
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, llK, llV, llLeft, llRight),
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, key, value, lRight, right));
+			} else {
+				return A5(elm$core$Dict$RBNode_elm_builtin, color, key, value, left, right);
+			}
+		}
+	});
+var elm$core$Dict$insertHelp = F3(
+	function (key, value, dict) {
+		if (dict.$ === 'RBEmpty_elm_builtin') {
+			return A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Red, key, value, elm$core$Dict$RBEmpty_elm_builtin, elm$core$Dict$RBEmpty_elm_builtin);
+		} else {
+			var nColor = dict.a;
+			var nKey = dict.b;
+			var nValue = dict.c;
+			var nLeft = dict.d;
+			var nRight = dict.e;
+			var _n1 = A2(elm$core$Basics$compare, key, nKey);
+			switch (_n1.$) {
+				case 'LT':
+					return A5(
+						elm$core$Dict$balance,
+						nColor,
+						nKey,
+						nValue,
+						A3(elm$core$Dict$insertHelp, key, value, nLeft),
+						nRight);
+				case 'EQ':
+					return A5(elm$core$Dict$RBNode_elm_builtin, nColor, nKey, value, nLeft, nRight);
+				default:
+					return A5(
+						elm$core$Dict$balance,
+						nColor,
+						nKey,
+						nValue,
+						nLeft,
+						A3(elm$core$Dict$insertHelp, key, value, nRight));
+			}
+		}
+	});
+var elm$core$Dict$insert = F3(
+	function (key, value, dict) {
+		var _n0 = A3(elm$core$Dict$insertHelp, key, value, dict);
+		if ((_n0.$ === 'RBNode_elm_builtin') && (_n0.a.$ === 'Red')) {
+			var _n1 = _n0.a;
+			var k = _n0.b;
+			var v = _n0.c;
+			var l = _n0.d;
+			var r = _n0.e;
+			return A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, k, v, l, r);
+		} else {
+			var x = _n0;
+			return x;
+		}
+	});
+var elm$core$Dict$foldl = F3(
+	function (func, acc, dict) {
+		foldl:
+		while (true) {
+			if (dict.$ === 'RBEmpty_elm_builtin') {
+				return acc;
+			} else {
+				var key = dict.b;
+				var value = dict.c;
+				var left = dict.d;
+				var right = dict.e;
+				var $temp$func = func,
+					$temp$acc = A3(
+					func,
+					key,
+					value,
+					A3(elm$core$Dict$foldl, func, acc, left)),
+					$temp$dict = right;
+				func = $temp$func;
+				acc = $temp$acc;
+				dict = $temp$dict;
+				continue foldl;
+			}
+		}
+	});
+var elm$core$Dict$merge = F6(
+	function (leftStep, bothStep, rightStep, leftDict, rightDict, initialResult) {
+		var stepState = F3(
+			function (rKey, rValue, _n0) {
+				stepState:
+				while (true) {
+					var list = _n0.a;
+					var result = _n0.b;
+					if (!list.b) {
+						return _Utils_Tuple2(
+							list,
+							A3(rightStep, rKey, rValue, result));
+					} else {
+						var _n2 = list.a;
+						var lKey = _n2.a;
+						var lValue = _n2.b;
+						var rest = list.b;
+						if (_Utils_cmp(lKey, rKey) < 0) {
+							var $temp$rKey = rKey,
+								$temp$rValue = rValue,
+								$temp$_n0 = _Utils_Tuple2(
+								rest,
+								A3(leftStep, lKey, lValue, result));
+							rKey = $temp$rKey;
+							rValue = $temp$rValue;
+							_n0 = $temp$_n0;
+							continue stepState;
+						} else {
+							if (_Utils_cmp(lKey, rKey) > 0) {
+								return _Utils_Tuple2(
+									list,
+									A3(rightStep, rKey, rValue, result));
+							} else {
+								return _Utils_Tuple2(
+									rest,
+									A4(bothStep, lKey, lValue, rValue, result));
+							}
+						}
+					}
+				}
+			});
+		var _n3 = A3(
+			elm$core$Dict$foldl,
+			stepState,
+			_Utils_Tuple2(
+				elm$core$Dict$toList(leftDict),
+				initialResult),
+			rightDict);
+		var leftovers = _n3.a;
+		var intermediateResult = _n3.b;
+		return A3(
+			elm$core$List$foldl,
+			F2(
+				function (_n4, result) {
+					var k = _n4.a;
+					var v = _n4.b;
+					return A3(leftStep, k, v, result);
+				}),
+			intermediateResult,
+			leftovers);
+	});
+var elm$core$Process$kill = _Scheduler_kill;
+var elm$core$Task$andThen = _Scheduler_andThen;
+var elm$core$Dict$get = F2(
+	function (targetKey, dict) {
+		get:
+		while (true) {
+			if (dict.$ === 'RBEmpty_elm_builtin') {
+				return elm$core$Maybe$Nothing;
+			} else {
+				var key = dict.b;
+				var value = dict.c;
+				var left = dict.d;
+				var right = dict.e;
+				var _n1 = A2(elm$core$Basics$compare, targetKey, key);
+				switch (_n1.$) {
+					case 'LT':
+						var $temp$targetKey = targetKey,
+							$temp$dict = left;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+					case 'EQ':
+						return elm$core$Maybe$Just(value);
+					default:
+						var $temp$targetKey = targetKey,
+							$temp$dict = right;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+				}
+			}
+		}
+	});
+var elm$time$Time$addMySub = F2(
+	function (_n0, state) {
+		var interval = _n0.a;
+		var tagger = _n0.b;
+		var _n1 = A2(elm$core$Dict$get, interval, state);
+		if (_n1.$ === 'Nothing') {
+			return A3(
+				elm$core$Dict$insert,
+				interval,
+				_List_fromArray(
+					[tagger]),
+				state);
+		} else {
+			var taggers = _n1.a;
+			return A3(
+				elm$core$Dict$insert,
+				interval,
+				A2(elm$core$List$cons, tagger, taggers),
+				state);
+		}
+	});
+var elm$core$Platform$sendToSelf = _Platform_sendToSelf;
+var elm$core$Process$spawn = _Scheduler_spawn;
+var elm$time$Time$Name = function (a) {
+	return {$: 'Name', a: a};
 };
-var elm$core$Task$init = elm$core$Task$succeed(_Utils_Tuple0);
+var elm$time$Time$Offset = function (a) {
+	return {$: 'Offset', a: a};
+};
+var elm$time$Time$Zone = F2(
+	function (a, b) {
+		return {$: 'Zone', a: a, b: b};
+	});
+var elm$time$Time$customZone = elm$time$Time$Zone;
+var elm$time$Time$setInterval = _Time_setInterval;
+var elm$time$Time$spawnHelp = F3(
+	function (router, intervals, processes) {
+		if (!intervals.b) {
+			return elm$core$Task$succeed(processes);
+		} else {
+			var interval = intervals.a;
+			var rest = intervals.b;
+			var spawnTimer = elm$core$Process$spawn(
+				A2(
+					elm$time$Time$setInterval,
+					interval,
+					A2(elm$core$Platform$sendToSelf, router, interval)));
+			var spawnRest = function (id) {
+				return A3(
+					elm$time$Time$spawnHelp,
+					router,
+					rest,
+					A3(elm$core$Dict$insert, interval, id, processes));
+			};
+			return A2(elm$core$Task$andThen, spawnRest, spawnTimer);
+		}
+	});
+var elm$time$Time$onEffects = F3(
+	function (router, subs, _n0) {
+		var processes = _n0.processes;
+		var rightStep = F3(
+			function (_n6, id, _n7) {
+				var spawns = _n7.a;
+				var existing = _n7.b;
+				var kills = _n7.c;
+				return _Utils_Tuple3(
+					spawns,
+					existing,
+					A2(
+						elm$core$Task$andThen,
+						function (_n5) {
+							return kills;
+						},
+						elm$core$Process$kill(id)));
+			});
+		var newTaggers = A3(elm$core$List$foldl, elm$time$Time$addMySub, elm$core$Dict$empty, subs);
+		var leftStep = F3(
+			function (interval, taggers, _n4) {
+				var spawns = _n4.a;
+				var existing = _n4.b;
+				var kills = _n4.c;
+				return _Utils_Tuple3(
+					A2(elm$core$List$cons, interval, spawns),
+					existing,
+					kills);
+			});
+		var bothStep = F4(
+			function (interval, taggers, id, _n3) {
+				var spawns = _n3.a;
+				var existing = _n3.b;
+				var kills = _n3.c;
+				return _Utils_Tuple3(
+					spawns,
+					A3(elm$core$Dict$insert, interval, id, existing),
+					kills);
+			});
+		var _n1 = A6(
+			elm$core$Dict$merge,
+			leftStep,
+			bothStep,
+			rightStep,
+			newTaggers,
+			processes,
+			_Utils_Tuple3(
+				_List_Nil,
+				elm$core$Dict$empty,
+				elm$core$Task$succeed(_Utils_Tuple0)));
+		var spawnList = _n1.a;
+		var existingDict = _n1.b;
+		var killTask = _n1.c;
+		return A2(
+			elm$core$Task$andThen,
+			function (newProcesses) {
+				return elm$core$Task$succeed(
+					A2(elm$time$Time$State, newTaggers, newProcesses));
+			},
+			A2(
+				elm$core$Task$andThen,
+				function (_n2) {
+					return A3(elm$time$Time$spawnHelp, router, spawnList, existingDict);
+				},
+				killTask));
+	});
 var elm$core$List$foldrHelper = F4(
 	function (fn, acc, ctr, ls) {
 		if (!ls.b) {
@@ -4998,6 +5313,7 @@ var elm$core$List$map = F2(
 			_List_Nil,
 			xs);
 	});
+var elm$core$Platform$sendToApp = _Platform_sendToApp;
 var elm$core$Task$map2 = F3(
 	function (func, taskA, taskB) {
 		return A2(
@@ -5020,7 +5336,125 @@ var elm$core$Task$sequence = function (tasks) {
 		elm$core$Task$succeed(_List_Nil),
 		tasks);
 };
-var elm$core$Platform$sendToApp = _Platform_sendToApp;
+var elm$time$Time$Posix = function (a) {
+	return {$: 'Posix', a: a};
+};
+var elm$time$Time$millisToPosix = elm$time$Time$Posix;
+var elm$time$Time$now = _Time_now(elm$time$Time$millisToPosix);
+var elm$time$Time$onSelfMsg = F3(
+	function (router, interval, state) {
+		var _n0 = A2(elm$core$Dict$get, interval, state.taggers);
+		if (_n0.$ === 'Nothing') {
+			return elm$core$Task$succeed(state);
+		} else {
+			var taggers = _n0.a;
+			var tellTaggers = function (time) {
+				return elm$core$Task$sequence(
+					A2(
+						elm$core$List$map,
+						function (tagger) {
+							return A2(
+								elm$core$Platform$sendToApp,
+								router,
+								tagger(time));
+						},
+						taggers));
+			};
+			return A2(
+				elm$core$Task$andThen,
+				function (_n1) {
+					return elm$core$Task$succeed(state);
+				},
+				A2(elm$core$Task$andThen, tellTaggers, elm$time$Time$now));
+		}
+	});
+var elm$core$Basics$composeL = F3(
+	function (g, f, x) {
+		return g(
+			f(x));
+	});
+var elm$time$Time$subMap = F2(
+	function (f, _n0) {
+		var interval = _n0.a;
+		var tagger = _n0.b;
+		return A2(
+			elm$time$Time$Every,
+			interval,
+			A2(elm$core$Basics$composeL, f, tagger));
+	});
+_Platform_effectManagers['Time'] = _Platform_createManager(elm$time$Time$init, elm$time$Time$onEffects, elm$time$Time$onSelfMsg, 0, elm$time$Time$subMap);
+var elm$time$Time$subscription = _Platform_leaf('Time');
+var elm$time$Time$every = F2(
+	function (interval, tagger) {
+		return elm$time$Time$subscription(
+			A2(elm$time$Time$Every, interval, tagger));
+	});
+var author$project$Timer$subscriptions = function (model) {
+	return model.isActive ? A2(elm$time$Time$every, 1000, author$project$Timer$Tick) : elm$core$Platform$Sub$none;
+};
+var elm$browser$Browser$Events$Document = {$: 'Document'};
+var elm$browser$Browser$Events$MySub = F3(
+	function (a, b, c) {
+		return {$: 'MySub', a: a, b: b, c: c};
+	});
+var elm$browser$Browser$Events$State = F2(
+	function (subs, pids) {
+		return {pids: pids, subs: subs};
+	});
+var elm$browser$Browser$Events$init = elm$core$Task$succeed(
+	A2(elm$browser$Browser$Events$State, _List_Nil, elm$core$Dict$empty));
+var elm$browser$Browser$Events$nodeToKey = function (node) {
+	if (node.$ === 'Document') {
+		return 'd_';
+	} else {
+		return 'w_';
+	}
+};
+var elm$browser$Browser$Events$addKey = function (sub) {
+	var node = sub.a;
+	var name = sub.b;
+	return _Utils_Tuple2(
+		_Utils_ap(
+			elm$browser$Browser$Events$nodeToKey(node),
+			name),
+		sub);
+};
+var elm$browser$Browser$Events$Event = F2(
+	function (key, event) {
+		return {event: event, key: key};
+	});
+var elm$core$Task$map = F2(
+	function (func, taskA) {
+		return A2(
+			elm$core$Task$andThen,
+			function (a) {
+				return elm$core$Task$succeed(
+					func(a));
+			},
+			taskA);
+	});
+var elm$browser$Browser$External = function (a) {
+	return {$: 'External', a: a};
+};
+var elm$browser$Browser$Internal = function (a) {
+	return {$: 'Internal', a: a};
+};
+var elm$browser$Browser$Dom$NotFound = function (a) {
+	return {$: 'NotFound', a: a};
+};
+var elm$core$Basics$never = function (_n0) {
+	never:
+	while (true) {
+		var nvr = _n0.a;
+		var $temp$_n0 = nvr;
+		_n0 = $temp$_n0;
+		continue never;
+	}
+};
+var elm$core$Task$Perform = function (a) {
+	return {$: 'Perform', a: a};
+};
+var elm$core$Task$init = elm$core$Task$succeed(_Utils_Tuple0);
 var elm$core$Task$spawnCmd = F2(
 	function (router, _n0) {
 		var task = _n0.a;
@@ -5232,115 +5666,6 @@ var elm$browser$Browser$Events$spawn = F3(
 						A2(elm$browser$Browser$Events$Event, key, event));
 				}));
 	});
-var elm$core$Dict$Black = {$: 'Black'};
-var elm$core$Dict$RBNode_elm_builtin = F5(
-	function (a, b, c, d, e) {
-		return {$: 'RBNode_elm_builtin', a: a, b: b, c: c, d: d, e: e};
-	});
-var elm$core$Basics$compare = _Utils_compare;
-var elm$core$Dict$Red = {$: 'Red'};
-var elm$core$Dict$balance = F5(
-	function (color, key, value, left, right) {
-		if ((right.$ === 'RBNode_elm_builtin') && (right.a.$ === 'Red')) {
-			var _n1 = right.a;
-			var rK = right.b;
-			var rV = right.c;
-			var rLeft = right.d;
-			var rRight = right.e;
-			if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) {
-				var _n3 = left.a;
-				var lK = left.b;
-				var lV = left.c;
-				var lLeft = left.d;
-				var lRight = left.e;
-				return A5(
-					elm$core$Dict$RBNode_elm_builtin,
-					elm$core$Dict$Red,
-					key,
-					value,
-					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, lK, lV, lLeft, lRight),
-					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, rK, rV, rLeft, rRight));
-			} else {
-				return A5(
-					elm$core$Dict$RBNode_elm_builtin,
-					color,
-					rK,
-					rV,
-					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Red, key, value, left, rLeft),
-					rRight);
-			}
-		} else {
-			if ((((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) && (left.d.$ === 'RBNode_elm_builtin')) && (left.d.a.$ === 'Red')) {
-				var _n5 = left.a;
-				var lK = left.b;
-				var lV = left.c;
-				var _n6 = left.d;
-				var _n7 = _n6.a;
-				var llK = _n6.b;
-				var llV = _n6.c;
-				var llLeft = _n6.d;
-				var llRight = _n6.e;
-				var lRight = left.e;
-				return A5(
-					elm$core$Dict$RBNode_elm_builtin,
-					elm$core$Dict$Red,
-					lK,
-					lV,
-					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, llK, llV, llLeft, llRight),
-					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, key, value, lRight, right));
-			} else {
-				return A5(elm$core$Dict$RBNode_elm_builtin, color, key, value, left, right);
-			}
-		}
-	});
-var elm$core$Dict$insertHelp = F3(
-	function (key, value, dict) {
-		if (dict.$ === 'RBEmpty_elm_builtin') {
-			return A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Red, key, value, elm$core$Dict$RBEmpty_elm_builtin, elm$core$Dict$RBEmpty_elm_builtin);
-		} else {
-			var nColor = dict.a;
-			var nKey = dict.b;
-			var nValue = dict.c;
-			var nLeft = dict.d;
-			var nRight = dict.e;
-			var _n1 = A2(elm$core$Basics$compare, key, nKey);
-			switch (_n1.$) {
-				case 'LT':
-					return A5(
-						elm$core$Dict$balance,
-						nColor,
-						nKey,
-						nValue,
-						A3(elm$core$Dict$insertHelp, key, value, nLeft),
-						nRight);
-				case 'EQ':
-					return A5(elm$core$Dict$RBNode_elm_builtin, nColor, nKey, value, nLeft, nRight);
-				default:
-					return A5(
-						elm$core$Dict$balance,
-						nColor,
-						nKey,
-						nValue,
-						nLeft,
-						A3(elm$core$Dict$insertHelp, key, value, nRight));
-			}
-		}
-	});
-var elm$core$Dict$insert = F3(
-	function (key, value, dict) {
-		var _n0 = A3(elm$core$Dict$insertHelp, key, value, dict);
-		if ((_n0.$ === 'RBNode_elm_builtin') && (_n0.a.$ === 'Red')) {
-			var _n1 = _n0.a;
-			var k = _n0.b;
-			var v = _n0.c;
-			var l = _n0.d;
-			var r = _n0.e;
-			return A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, k, v, l, r);
-		} else {
-			var x = _n0;
-			return x;
-		}
-	});
 var elm$core$Dict$fromList = function (assocs) {
 	return A3(
 		elm$core$List$foldl,
@@ -5353,97 +5678,10 @@ var elm$core$Dict$fromList = function (assocs) {
 		elm$core$Dict$empty,
 		assocs);
 };
-var elm$core$Dict$foldl = F3(
-	function (func, acc, dict) {
-		foldl:
-		while (true) {
-			if (dict.$ === 'RBEmpty_elm_builtin') {
-				return acc;
-			} else {
-				var key = dict.b;
-				var value = dict.c;
-				var left = dict.d;
-				var right = dict.e;
-				var $temp$func = func,
-					$temp$acc = A3(
-					func,
-					key,
-					value,
-					A3(elm$core$Dict$foldl, func, acc, left)),
-					$temp$dict = right;
-				func = $temp$func;
-				acc = $temp$acc;
-				dict = $temp$dict;
-				continue foldl;
-			}
-		}
-	});
-var elm$core$Dict$merge = F6(
-	function (leftStep, bothStep, rightStep, leftDict, rightDict, initialResult) {
-		var stepState = F3(
-			function (rKey, rValue, _n0) {
-				stepState:
-				while (true) {
-					var list = _n0.a;
-					var result = _n0.b;
-					if (!list.b) {
-						return _Utils_Tuple2(
-							list,
-							A3(rightStep, rKey, rValue, result));
-					} else {
-						var _n2 = list.a;
-						var lKey = _n2.a;
-						var lValue = _n2.b;
-						var rest = list.b;
-						if (_Utils_cmp(lKey, rKey) < 0) {
-							var $temp$rKey = rKey,
-								$temp$rValue = rValue,
-								$temp$_n0 = _Utils_Tuple2(
-								rest,
-								A3(leftStep, lKey, lValue, result));
-							rKey = $temp$rKey;
-							rValue = $temp$rValue;
-							_n0 = $temp$_n0;
-							continue stepState;
-						} else {
-							if (_Utils_cmp(lKey, rKey) > 0) {
-								return _Utils_Tuple2(
-									list,
-									A3(rightStep, rKey, rValue, result));
-							} else {
-								return _Utils_Tuple2(
-									rest,
-									A4(bothStep, lKey, lValue, rValue, result));
-							}
-						}
-					}
-				}
-			});
-		var _n3 = A3(
-			elm$core$Dict$foldl,
-			stepState,
-			_Utils_Tuple2(
-				elm$core$Dict$toList(leftDict),
-				initialResult),
-			rightDict);
-		var leftovers = _n3.a;
-		var intermediateResult = _n3.b;
-		return A3(
-			elm$core$List$foldl,
-			F2(
-				function (_n4, result) {
-					var k = _n4.a;
-					var v = _n4.b;
-					return A3(leftStep, k, v, result);
-				}),
-			intermediateResult,
-			leftovers);
-	});
 var elm$core$Dict$union = F2(
 	function (t1, t2) {
 		return A3(elm$core$Dict$foldl, elm$core$Dict$insert, t2, t1);
 	});
-var elm$core$Process$kill = _Scheduler_kill;
 var elm$browser$Browser$Events$onEffects = F3(
 	function (router, subs, state) {
 		var stepRight = F3(
@@ -5572,243 +5810,25 @@ var elm$browser$Browser$Events$on = F3(
 			A3(elm$browser$Browser$Events$MySub, node, name, decoder));
 	});
 var elm$browser$Browser$Events$onKeyPress = A2(elm$browser$Browser$Events$on, elm$browser$Browser$Events$Document, 'keypress');
-var elm$core$Platform$Sub$batch = _Platform_batch;
-var elm$time$Time$Every = F2(
-	function (a, b) {
-		return {$: 'Every', a: a, b: b};
-	});
-var elm$time$Time$State = F2(
-	function (taggers, processes) {
-		return {processes: processes, taggers: taggers};
-	});
-var elm$time$Time$init = elm$core$Task$succeed(
-	A2(elm$time$Time$State, elm$core$Dict$empty, elm$core$Dict$empty));
-var elm$core$Dict$get = F2(
-	function (targetKey, dict) {
-		get:
-		while (true) {
-			if (dict.$ === 'RBEmpty_elm_builtin') {
-				return elm$core$Maybe$Nothing;
-			} else {
-				var key = dict.b;
-				var value = dict.c;
-				var left = dict.d;
-				var right = dict.e;
-				var _n1 = A2(elm$core$Basics$compare, targetKey, key);
-				switch (_n1.$) {
-					case 'LT':
-						var $temp$targetKey = targetKey,
-							$temp$dict = left;
-						targetKey = $temp$targetKey;
-						dict = $temp$dict;
-						continue get;
-					case 'EQ':
-						return elm$core$Maybe$Just(value);
-					default:
-						var $temp$targetKey = targetKey,
-							$temp$dict = right;
-						targetKey = $temp$targetKey;
-						dict = $temp$dict;
-						continue get;
-				}
-			}
-		}
-	});
-var elm$time$Time$addMySub = F2(
-	function (_n0, state) {
-		var interval = _n0.a;
-		var tagger = _n0.b;
-		var _n1 = A2(elm$core$Dict$get, interval, state);
-		if (_n1.$ === 'Nothing') {
-			return A3(
-				elm$core$Dict$insert,
-				interval,
-				_List_fromArray(
-					[tagger]),
-				state);
-		} else {
-			var taggers = _n1.a;
-			return A3(
-				elm$core$Dict$insert,
-				interval,
-				A2(elm$core$List$cons, tagger, taggers),
-				state);
-		}
-	});
-var elm$core$Process$spawn = _Scheduler_spawn;
-var elm$time$Time$Name = function (a) {
-	return {$: 'Name', a: a};
-};
-var elm$time$Time$Offset = function (a) {
-	return {$: 'Offset', a: a};
-};
-var elm$time$Time$Zone = F2(
-	function (a, b) {
-		return {$: 'Zone', a: a, b: b};
-	});
-var elm$time$Time$customZone = elm$time$Time$Zone;
-var elm$time$Time$setInterval = _Time_setInterval;
-var elm$time$Time$spawnHelp = F3(
-	function (router, intervals, processes) {
-		if (!intervals.b) {
-			return elm$core$Task$succeed(processes);
-		} else {
-			var interval = intervals.a;
-			var rest = intervals.b;
-			var spawnTimer = elm$core$Process$spawn(
-				A2(
-					elm$time$Time$setInterval,
-					interval,
-					A2(elm$core$Platform$sendToSelf, router, interval)));
-			var spawnRest = function (id) {
-				return A3(
-					elm$time$Time$spawnHelp,
-					router,
-					rest,
-					A3(elm$core$Dict$insert, interval, id, processes));
-			};
-			return A2(elm$core$Task$andThen, spawnRest, spawnTimer);
-		}
-	});
-var elm$time$Time$onEffects = F3(
-	function (router, subs, _n0) {
-		var processes = _n0.processes;
-		var rightStep = F3(
-			function (_n6, id, _n7) {
-				var spawns = _n7.a;
-				var existing = _n7.b;
-				var kills = _n7.c;
-				return _Utils_Tuple3(
-					spawns,
-					existing,
-					A2(
-						elm$core$Task$andThen,
-						function (_n5) {
-							return kills;
-						},
-						elm$core$Process$kill(id)));
-			});
-		var newTaggers = A3(elm$core$List$foldl, elm$time$Time$addMySub, elm$core$Dict$empty, subs);
-		var leftStep = F3(
-			function (interval, taggers, _n4) {
-				var spawns = _n4.a;
-				var existing = _n4.b;
-				var kills = _n4.c;
-				return _Utils_Tuple3(
-					A2(elm$core$List$cons, interval, spawns),
-					existing,
-					kills);
-			});
-		var bothStep = F4(
-			function (interval, taggers, id, _n3) {
-				var spawns = _n3.a;
-				var existing = _n3.b;
-				var kills = _n3.c;
-				return _Utils_Tuple3(
-					spawns,
-					A3(elm$core$Dict$insert, interval, id, existing),
-					kills);
-			});
-		var _n1 = A6(
-			elm$core$Dict$merge,
-			leftStep,
-			bothStep,
-			rightStep,
-			newTaggers,
-			processes,
-			_Utils_Tuple3(
-				_List_Nil,
-				elm$core$Dict$empty,
-				elm$core$Task$succeed(_Utils_Tuple0)));
-		var spawnList = _n1.a;
-		var existingDict = _n1.b;
-		var killTask = _n1.c;
-		return A2(
-			elm$core$Task$andThen,
-			function (newProcesses) {
-				return elm$core$Task$succeed(
-					A2(elm$time$Time$State, newTaggers, newProcesses));
-			},
-			A2(
-				elm$core$Task$andThen,
-				function (_n2) {
-					return A3(elm$time$Time$spawnHelp, router, spawnList, existingDict);
-				},
-				killTask));
-	});
-var elm$time$Time$Posix = function (a) {
-	return {$: 'Posix', a: a};
-};
-var elm$time$Time$millisToPosix = elm$time$Time$Posix;
-var elm$time$Time$now = _Time_now(elm$time$Time$millisToPosix);
-var elm$time$Time$onSelfMsg = F3(
-	function (router, interval, state) {
-		var _n0 = A2(elm$core$Dict$get, interval, state.taggers);
-		if (_n0.$ === 'Nothing') {
-			return elm$core$Task$succeed(state);
-		} else {
-			var taggers = _n0.a;
-			var tellTaggers = function (time) {
-				return elm$core$Task$sequence(
-					A2(
-						elm$core$List$map,
-						function (tagger) {
-							return A2(
-								elm$core$Platform$sendToApp,
-								router,
-								tagger(time));
-						},
-						taggers));
-			};
-			return A2(
-				elm$core$Task$andThen,
-				function (_n1) {
-					return elm$core$Task$succeed(state);
-				},
-				A2(elm$core$Task$andThen, tellTaggers, elm$time$Time$now));
-		}
-	});
-var elm$core$Basics$composeL = F3(
-	function (g, f, x) {
-		return g(
-			f(x));
-	});
-var elm$time$Time$subMap = F2(
-	function (f, _n0) {
-		var interval = _n0.a;
-		var tagger = _n0.b;
-		return A2(
-			elm$time$Time$Every,
-			interval,
-			A2(elm$core$Basics$composeL, f, tagger));
-	});
-_Platform_effectManagers['Time'] = _Platform_createManager(elm$time$Time$init, elm$time$Time$onEffects, elm$time$Time$onSelfMsg, 0, elm$time$Time$subMap);
-var elm$time$Time$subscription = _Platform_leaf('Time');
-var elm$time$Time$every = F2(
-	function (interval, tagger) {
-		return elm$time$Time$subscription(
-			A2(elm$time$Time$Every, interval, tagger));
-	});
+var elm$core$Platform$Sub$map = _Platform_map;
 var author$project$Pomodoro$subscriptions = function (model) {
 	return elm$core$Platform$Sub$batch(
 		_List_fromArray(
 			[
-				A2(elm$time$Time$every, 1000, author$project$Pomodoro$Tick),
 				elm$browser$Browser$Events$onKeyPress(
-				A2(elm$json$Json$Decode$map, author$project$Pomodoro$OnKeyPressed, author$project$Pomodoro$keyDecoder))
+				A2(elm$json$Json$Decode$map, author$project$Pomodoro$OnKeyPressed, author$project$Pomodoro$keyDecoder)),
+				A2(
+				elm$core$Platform$Sub$map,
+				author$project$Pomodoro$TimerMsg,
+				author$project$Timer$subscriptions(model.timer))
 			]));
 };
 var author$project$Pomodoro$FocusResult = function (a) {
 	return {$: 'FocusResult', a: a};
 };
-var author$project$Pomodoro$Inactive = {$: 'Inactive'};
-var author$project$Pomodoro$Task = F3(
-	function (id, description, done) {
-		return {description: description, done: done, id: id};
-	});
-var author$project$Pomodoro$Timer = F4(
-	function (task, initialValue, timeout, status) {
-		return {initialValue: initialValue, status: status, task: task, timeout: timeout};
+var author$project$Pomodoro$Task = F4(
+	function (id, description, done, isActive) {
+		return {description: description, done: done, id: id, isActive: isActive};
 	});
 var author$project$Pomodoro$getNewTaskId = function (model) {
 	return model.lastNewId + 1;
@@ -5835,21 +5855,6 @@ var author$project$Pomodoro$addNewTask = function (model) {
 var author$project$Pomodoro$UpdateTask = function (a) {
 	return {$: 'UpdateTask', a: a};
 };
-var author$project$Pomodoro$isActiveTask = F2(
-	function (model, task) {
-		var _n0 = model.timer;
-		if (_n0.$ === 'Just') {
-			var timer = _n0.a;
-			var _n1 = timer.status;
-			if (_n1.$ === 'Work') {
-				return _Utils_eq(timer.task.id, task.id) ? true : false;
-			} else {
-				return false;
-			}
-		} else {
-			return false;
-		}
-	});
 var elm$core$Basics$neq = _Utils_notEqual;
 var elm$core$List$filter = F2(
 	function (isGood, list) {
@@ -5879,7 +5884,7 @@ var author$project$Pomodoro$removeSelectedTask = F2(
 			return model;
 		} else {
 			var selectedTask = maybeSelectedTask.a;
-			return A2(author$project$Pomodoro$isActiveTask, model, selectedTask) ? model : A2(author$project$Pomodoro$removeTask, model, selectedTask);
+			return selectedTask.isActive ? model : A2(author$project$Pomodoro$removeTask, model, selectedTask);
 		}
 	});
 var elm$core$List$head = function (list) {
@@ -5974,7 +5979,7 @@ var author$project$Pomodoro$toggleTimerForSelectedTask = F2(
 			return elm$core$Platform$Cmd$none;
 		} else {
 			var selectedTask = maybeSelectedTask.a;
-			return A2(author$project$Pomodoro$isActiveTask, model, selectedTask) ? author$project$Pomodoro$send(
+			return selectedTask.isActive ? author$project$Pomodoro$send(
 				author$project$Pomodoro$StopTimer(selectedTask)) : author$project$Pomodoro$send(
 				author$project$Pomodoro$UpdateTimer(selectedTask));
 		}
@@ -6012,153 +6017,94 @@ var author$project$Pomodoro$processKey = F2(
 				return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 		}
 	});
-var author$project$Pomodoro$Work = function (a) {
+var author$project$Timer$LongPause = {$: 'LongPause'};
+var author$project$Timer$Pause = function (a) {
+	return {$: 'Pause', a: a};
+};
+var author$project$Timer$Work = function (a) {
 	return {$: 'Work', a: a};
 };
-var author$project$Pomodoro$workTimeout = 1500;
-var author$project$Pomodoro$createTimer = function (task) {
-	return A4(
-		author$project$Pomodoro$Timer,
-		task,
-		author$project$Pomodoro$workTimeout,
-		author$project$Pomodoro$workTimeout,
-		author$project$Pomodoro$Work(1));
-};
-var author$project$Pomodoro$updateExistingTimer = F2(
-	function (timer, task) {
-		var _n0 = timer.status;
+var author$project$Timer$shift = F2(
+	function (model, label) {
+		var _n0 = model.status;
 		switch (_n0.$) {
+			case 'Ready':
+				var count = _n0.a;
+				return _Utils_update(
+					model,
+					{
+						initialValue: 1500,
+						isActive: true,
+						label: label,
+						status: author$project$Timer$Work(count),
+						timeout: 0
+					});
+			case 'Work':
+				if (_n0.a === 4) {
+					return _Utils_update(
+						model,
+						{initialValue: 1200, isActive: true, status: author$project$Timer$LongPause, timeout: 0});
+				} else {
+					var count = _n0.a;
+					return _Utils_update(
+						model,
+						{
+							initialValue: 300,
+							isActive: true,
+							status: author$project$Timer$Pause(count),
+							timeout: 0
+						});
+				}
 			case 'Pause':
 				var count = _n0.a;
 				return _Utils_update(
-					timer,
+					model,
 					{
-						initialValue: author$project$Pomodoro$workTimeout,
-						status: author$project$Pomodoro$Work(count + 1),
-						task: task,
-						timeout: author$project$Pomodoro$workTimeout
-					});
-			case 'LongPause':
-				return _Utils_update(
-					timer,
-					{
-						initialValue: author$project$Pomodoro$workTimeout,
-						status: author$project$Pomodoro$Work(1),
-						task: task,
-						timeout: author$project$Pomodoro$workTimeout
-					});
-			case 'Inactive':
-				return _Utils_update(
-					timer,
-					{
-						initialValue: author$project$Pomodoro$workTimeout,
-						status: author$project$Pomodoro$Work(1),
-						task: task,
-						timeout: author$project$Pomodoro$workTimeout
+						initialValue: 0,
+						isActive: false,
+						status: author$project$Timer$Ready(count + 1),
+						timeout: 0
 					});
 			default:
-				return timer;
+				return _Utils_update(
+					model,
+					{
+						initialValue: 0,
+						isActive: false,
+						status: author$project$Timer$Ready(1),
+						timeout: 0
+					});
 		}
 	});
 var author$project$Pomodoro$updateTimer = F2(
 	function (model, task) {
-		var newTimer = function () {
-			var _n0 = model.timer;
-			if (_n0.$ === 'Nothing') {
-				return author$project$Pomodoro$createTimer(task);
-			} else {
-				var timer = _n0.a;
-				return A2(author$project$Pomodoro$updateExistingTimer, timer, task);
-			}
-		}();
 		return _Utils_update(
 			model,
 			{
-				timer: elm$core$Maybe$Just(newTimer)
+				timer: A2(author$project$Timer$shift, model.timer, task.description)
 			});
 	});
-var author$project$Pomodoro$LongPause = {$: 'LongPause'};
-var author$project$Pomodoro$Pause = function (a) {
-	return {$: 'Pause', a: a};
-};
-var author$project$Pomodoro$longPauseTimeout = 1200;
-var elm$json$Json$Encode$string = _Json_wrap;
-var author$project$Pomodoro$notify = _Platform_outgoingPort('notify', elm$json$Json$Encode$string);
-var author$project$Pomodoro$pauseTimeout = 300;
-var author$project$Pomodoro$shiftTimer = function (timer) {
-	var _n0 = timer.status;
-	switch (_n0.$) {
-		case 'Work':
-			if (_n0.a === 4) {
-				var newTimer = _Utils_update(
-					timer,
-					{initialValue: author$project$Pomodoro$longPauseTimeout, status: author$project$Pomodoro$LongPause, timeout: author$project$Pomodoro$longPauseTimeout});
-				return _Utils_Tuple2(
-					elm$core$Maybe$Just(newTimer),
-					author$project$Pomodoro$notify('Take some rest...'));
-			} else {
-				var count = _n0.a;
-				var newTimer = _Utils_update(
-					timer,
-					{
-						initialValue: author$project$Pomodoro$pauseTimeout,
-						status: author$project$Pomodoro$Pause(count),
-						timeout: author$project$Pomodoro$pauseTimeout
-					});
-				return _Utils_Tuple2(
-					elm$core$Maybe$Just(newTimer),
-					author$project$Pomodoro$notify('Take a breathe...'));
-			}
-		case 'Pause':
-			var newTimer = _Utils_update(
-				timer,
-				{status: author$project$Pomodoro$Inactive});
+var author$project$Timer$setActive = F2(
+	function (model, isActive) {
+		return _Utils_update(
+			model,
+			{isActive: isActive});
+	});
+var author$project$Timer$update = F2(
+	function (msg, model) {
+		if (_Utils_eq(model.timeout, model.initialValue)) {
+			var newModel = A2(author$project$Timer$shift, model, model.label);
+			return _Utils_Tuple2(newModel, elm$core$Platform$Cmd$none);
+		} else {
 			return _Utils_Tuple2(
-				elm$core$Maybe$Just(newTimer),
-				author$project$Pomodoro$notify('Ready'));
-		case 'LongPause':
-			var newTimer = _Utils_update(
-				timer,
-				{status: author$project$Pomodoro$Inactive});
-			return _Utils_Tuple2(
-				elm$core$Maybe$Just(newTimer),
-				author$project$Pomodoro$notify('Ready'));
-		default:
-			return _Utils_Tuple2(
-				elm$core$Maybe$Just(timer),
+				_Utils_update(
+					model,
+					{timeout: model.timeout + 1}),
 				elm$core$Platform$Cmd$none);
-	}
-};
-var author$project$Pomodoro$decreaseTimer = function (timer) {
-	var _n0 = timer.timeout;
-	if (!_n0) {
-		return author$project$Pomodoro$shiftTimer(timer);
-	} else {
-		var newTimer = _Utils_update(
-			timer,
-			{timeout: timer.timeout - 1});
-		return _Utils_Tuple2(
-			elm$core$Maybe$Just(newTimer),
-			elm$core$Platform$Cmd$none);
-	}
-};
-var author$project$Pomodoro$updateTimerAtTick = function (model) {
-	var _n0 = model.timer;
-	if (_n0.$ === 'Nothing') {
-		return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
-	} else {
-		var currentTimer = _n0.a;
-		var _n1 = author$project$Pomodoro$decreaseTimer(currentTimer);
-		var newTimer = _n1.a;
-		var cmd = _n1.b;
-		return _Utils_Tuple2(
-			_Utils_update(
-				model,
-				{timer: newTimer}),
-			cmd);
-	}
-};
+		}
+	});
 var elm$browser$Browser$Dom$focus = _Browser_call('focus');
+var elm$core$Platform$Cmd$map = _Platform_map;
 var elm$core$Task$onError = _Scheduler_onError;
 var elm$core$Task$attempt = F2(
 	function (resultToMessage, task) {
@@ -6189,7 +6135,7 @@ var author$project$Pomodoro$update = F2(
 				return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 			case 'UpdateTask':
 				if (msg.a === '') {
-					var task = A3(author$project$Pomodoro$Task, 0, '', false);
+					var task = A4(author$project$Pomodoro$Task, 0, '', false, false);
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
@@ -6202,7 +6148,7 @@ var author$project$Pomodoro$update = F2(
 							elm$browser$Browser$Dom$focus('new-task-description')));
 				} else {
 					var description = msg.a;
-					var task = A3(author$project$Pomodoro$Task, 0, description, false);
+					var task = A4(author$project$Pomodoro$Task, 0, description, false, false);
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
@@ -6228,8 +6174,6 @@ var author$project$Pomodoro$update = F2(
 						model,
 						{selectedTaskId: task.id}),
 					elm$core$Platform$Cmd$none);
-			case 'Tick':
-				return author$project$Pomodoro$updateTimerAtTick(model);
 			case 'OnKeyPressed':
 				var key = msg.a;
 				var _n1 = model.newTask;
@@ -6238,16 +6182,25 @@ var author$project$Pomodoro$update = F2(
 				} else {
 					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 				}
-			default:
+			case 'StopTimer':
 				var task = msg.a;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
-							timer: elm$core$Maybe$Just(
-								A4(author$project$Pomodoro$Timer, task, 0, 0, author$project$Pomodoro$Inactive))
+							timer: A2(author$project$Timer$setActive, model.timer, false)
 						}),
 					elm$core$Platform$Cmd$none);
+			default:
+				var timerMsg = msg.a;
+				var _n2 = A2(author$project$Timer$update, timerMsg, model.timer);
+				var newTimer = _n2.a;
+				var timerCmd = _n2.b;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{timer: newTimer}),
+					A2(elm$core$Platform$Cmd$map, author$project$Pomodoro$TimerMsg, timerCmd));
 		}
 	});
 var elm$html$Html$a = _VirtualDom_node('a');
@@ -6257,6 +6210,7 @@ var elm$html$Html$i = _VirtualDom_node('i');
 var elm$html$Html$nav = _VirtualDom_node('nav');
 var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var elm$html$Html$text = elm$virtual_dom$VirtualDom$text;
+var elm$json$Json$Encode$string = _Json_wrap;
 var elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {
 		return A2(
@@ -6489,14 +6443,6 @@ var author$project$Pomodoro$viewNewTask = function (model) {
 var author$project$Pomodoro$SelectTask = function (a) {
 	return {$: 'SelectTask', a: a};
 };
-var author$project$Pomodoro$isTimerOn = function (model) {
-	var _n0 = model.timer;
-	if (_n0.$ === 'Just') {
-		return true;
-	} else {
-		return false;
-	}
-};
 var author$project$Pomodoro$viewActiveTaskActions = function (task) {
 	return _List_fromArray(
 		[
@@ -6565,7 +6511,7 @@ var author$project$Pomodoro$viewStartTaskButton = function (task) {
 };
 var author$project$Pomodoro$viewTaskActions = F2(
 	function (model, task) {
-		var buttons = author$project$Pomodoro$isTimerOn(model) ? (A2(author$project$Pomodoro$isActiveTask, model, task) ? author$project$Pomodoro$viewActiveTaskActions(task) : _List_fromArray(
+		var buttons = model.timer.isActive ? (task.isActive ? author$project$Pomodoro$viewActiveTaskActions(task) : _List_fromArray(
 			[
 				author$project$Pomodoro$viewRemoveTaskButton(task)
 			])) : _List_fromArray(
@@ -6629,84 +6575,39 @@ var author$project$Pomodoro$viewTaskList = function (model) {
 			author$project$Pomodoro$viewTask(model),
 			model.tasks));
 };
-var author$project$Pomodoro$viewTimerClassNames = function (timer) {
-	var _n0 = timer.status;
-	switch (_n0.$) {
-		case 'Work':
-			return 'timer timer-work';
-		case 'Pause':
-			return 'timer timer-pause';
-		case 'LongPause':
-			return 'timer timer-long-pause';
-		default:
-			return 'timer timer-inactive';
+var author$project$Timer$viewTimerClassNames = function (model) {
+	if (model.isActive) {
+		var _n0 = model.status;
+		switch (_n0.$) {
+			case 'Work':
+				return 'timer timer-work';
+			case 'Pause':
+				return 'timer timer-pause';
+			case 'LongPause':
+				return 'timer timer-long-pause';
+			default:
+				return 'timer timer-inactive';
+		}
+	} else {
+		return 'timer timer-inactive';
 	}
 };
-var author$project$Pomodoro$viewTimerDescription = function (timer) {
-	var _n0 = timer.status;
-	switch (_n0.$) {
-		case 'Work':
-			return elm$html$Html$text(timer.task.description);
-		case 'Pause':
-			return elm$html$Html$text('Take a breathe...');
-		case 'LongPause':
-			return elm$html$Html$text('Take some rest...');
-		default:
-			return elm$html$Html$text('Ready');
+var author$project$Timer$viewTimerLabel = function (model) {
+	if (model.isActive) {
+		var _n0 = model.status;
+		switch (_n0.$) {
+			case 'Work':
+				return elm$html$Html$text(model.label);
+			case 'Pause':
+				return elm$html$Html$text('Take a breathe...');
+			case 'LongPause':
+				return elm$html$Html$text('Take some rest...');
+			default:
+				return elm$html$Html$text('Ready to go');
+		}
+	} else {
+		return elm$html$Html$text('Ready to go');
 	}
-};
-var elm$core$String$cons = _String_cons;
-var elm$core$String$fromChar = function (_char) {
-	return A2(elm$core$String$cons, _char, '');
-};
-var elm$core$Bitwise$and = _Bitwise_and;
-var elm$core$Bitwise$shiftRightBy = _Bitwise_shiftRightBy;
-var elm$core$String$repeatHelp = F3(
-	function (n, chunk, result) {
-		return (n <= 0) ? result : A3(
-			elm$core$String$repeatHelp,
-			n >> 1,
-			_Utils_ap(chunk, chunk),
-			(!(n & 1)) ? result : _Utils_ap(result, chunk));
-	});
-var elm$core$String$repeat = F2(
-	function (n, chunk) {
-		return A3(elm$core$String$repeatHelp, n, chunk, '');
-	});
-var elm$core$String$padLeft = F3(
-	function (n, _char, string) {
-		return _Utils_ap(
-			A2(
-				elm$core$String$repeat,
-				n - elm$core$String$length(string),
-				elm$core$String$fromChar(_char)),
-			string);
-	});
-var author$project$Pomodoro$formatMinutesOrSeconds = function (value) {
-	return A3(
-		elm$core$String$padLeft,
-		2,
-		_Utils_chr('0'),
-		elm$core$String$fromInt(value));
-};
-var elm$html$Html$h1 = _VirtualDom_node('h1');
-var author$project$Pomodoro$viewTimerTimeout = function (timer) {
-	var minutes = (timer.timeout / 60) | 0;
-	var seconds = timer.timeout - (minutes * 60);
-	return A2(
-		elm$html$Html$h1,
-		_List_fromArray(
-			[
-				elm$html$Html$Attributes$class('timeout')
-			]),
-		_List_fromArray(
-			[
-				elm$html$Html$text(
-				author$project$Pomodoro$formatMinutesOrSeconds(minutes)),
-				elm$html$Html$text(':'),
-				elm$html$Html$text(
-				author$project$Pomodoro$formatMinutesOrSeconds(seconds))
-			]));
 };
 var elm$core$Basics$pi = _Basics_pi;
 var elm$core$Basics$round = _Basics_round;
@@ -6782,15 +6683,62 @@ var author$project$ProgressRing$viewProgress = F3(
 					_List_Nil)
 				]));
 	});
-var author$project$Pomodoro$viewTimerProgress = function (timer) {
-	var progress = function () {
-		var _n0 = timer.status;
-		if (_n0.$ === 'Inactive') {
-			return 0.0;
-		} else {
-			return (timer.initialValue - timer.timeout) / timer.initialValue;
-		}
-	}();
+var elm$core$String$cons = _String_cons;
+var elm$core$String$fromChar = function (_char) {
+	return A2(elm$core$String$cons, _char, '');
+};
+var elm$core$Bitwise$and = _Bitwise_and;
+var elm$core$Bitwise$shiftRightBy = _Bitwise_shiftRightBy;
+var elm$core$String$repeatHelp = F3(
+	function (n, chunk, result) {
+		return (n <= 0) ? result : A3(
+			elm$core$String$repeatHelp,
+			n >> 1,
+			_Utils_ap(chunk, chunk),
+			(!(n & 1)) ? result : _Utils_ap(result, chunk));
+	});
+var elm$core$String$repeat = F2(
+	function (n, chunk) {
+		return A3(elm$core$String$repeatHelp, n, chunk, '');
+	});
+var elm$core$String$padLeft = F3(
+	function (n, _char, string) {
+		return _Utils_ap(
+			A2(
+				elm$core$String$repeat,
+				n - elm$core$String$length(string),
+				elm$core$String$fromChar(_char)),
+			string);
+	});
+var author$project$Timer$formatMinutesOrSeconds = function (value) {
+	return A3(
+		elm$core$String$padLeft,
+		2,
+		_Utils_chr('0'),
+		elm$core$String$fromInt(value));
+};
+var elm$html$Html$h1 = _VirtualDom_node('h1');
+var author$project$Timer$viewTimerTimeout = function (model) {
+	var remainingTime = model.initialValue - model.timeout;
+	var minutes = (remainingTime / 60) | 0;
+	var seconds = remainingTime - (minutes * 60);
+	return A2(
+		elm$html$Html$h1,
+		_List_fromArray(
+			[
+				elm$html$Html$Attributes$class('timeout')
+			]),
+		_List_fromArray(
+			[
+				elm$html$Html$text(
+				author$project$Timer$formatMinutesOrSeconds(minutes)),
+				elm$html$Html$text(':'),
+				elm$html$Html$text(
+				author$project$Timer$formatMinutesOrSeconds(seconds))
+			]));
+};
+var author$project$Timer$viewTimerProgress = function (model) {
+	var progress = model.isActive ? (model.timeout / model.initialValue) : 0.0;
 	return A2(
 		elm$html$Html$div,
 		_List_fromArray(
@@ -6809,37 +6757,34 @@ var author$project$Pomodoro$viewTimerProgress = function (timer) {
 					[
 						A3(author$project$ProgressRing$viewProgress, 150, 6, progress)
 					])),
-				author$project$Pomodoro$viewTimerTimeout(timer)
+				author$project$Timer$viewTimerTimeout(model)
 			]));
 };
-var author$project$Pomodoro$viewTimer = function (maybeTimer) {
-	if (maybeTimer.$ === 'Just') {
-		var timer = maybeTimer.a;
-		return A2(
-			elm$html$Html$div,
-			_List_fromArray(
-				[
-					elm$html$Html$Attributes$class(
-					author$project$Pomodoro$viewTimerClassNames(timer))
-				]),
-			_List_fromArray(
-				[
-					author$project$Pomodoro$viewTimerProgress(timer),
-					A2(
-					elm$html$Html$div,
-					_List_fromArray(
-						[
-							elm$html$Html$Attributes$class('task-description')
-						]),
-					_List_fromArray(
-						[
-							author$project$Pomodoro$viewTimerDescription(timer)
-						]))
-				]));
-	} else {
-		return A2(elm$html$Html$div, _List_Nil, _List_Nil);
-	}
+var author$project$Timer$view = function (model) {
+	return A2(
+		elm$html$Html$div,
+		_List_fromArray(
+			[
+				elm$html$Html$Attributes$class(
+				author$project$Timer$viewTimerClassNames(model))
+			]),
+		_List_fromArray(
+			[
+				author$project$Timer$viewTimerProgress(model),
+				A2(
+				elm$html$Html$div,
+				_List_fromArray(
+					[
+						elm$html$Html$Attributes$class('task-description')
+					]),
+				_List_fromArray(
+					[
+						author$project$Timer$viewTimerLabel(model)
+					]))
+			]));
 };
+var elm$virtual_dom$VirtualDom$map = _VirtualDom_map;
+var elm$html$Html$map = elm$virtual_dom$VirtualDom$map;
 var author$project$Pomodoro$view = function (model) {
 	return A2(
 		elm$html$Html$div,
@@ -6850,7 +6795,10 @@ var author$project$Pomodoro$view = function (model) {
 		_List_fromArray(
 			[
 				author$project$Pomodoro$viewHeader,
-				author$project$Pomodoro$viewTimer(model.timer),
+				A2(
+				elm$html$Html$map,
+				author$project$Pomodoro$TimerMsg,
+				author$project$Timer$view(model.timer)),
 				author$project$Pomodoro$viewTaskList(model),
 				author$project$Pomodoro$viewNewTask(model)
 			]));

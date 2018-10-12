@@ -8,7 +8,6 @@ import Html.Attributes exposing (class, disabled, href, id, placeholder, src, ty
 import Html.Events exposing (onClick, onDoubleClick, onInput, onSubmit)
 import Json.Decode exposing (Decoder, field, map, string)
 import Task
-import Time
 import Timer
 
 
@@ -23,7 +22,7 @@ type alias Task =
     { id : Id
     , description : String
     , done : Bool
-    , active : Bool
+    , isActive : Bool
     }
 
 
@@ -42,7 +41,7 @@ initialModel =
     , newTask = Nothing
     , lastNewId = 0
     , selectedTaskId = 0
-    , timer = Nothing
+    , timer = Timer.init
     }
 
 
@@ -133,22 +132,12 @@ viewActiveTaskActions task =
     ]
 
 
-isTimerOn : Model -> Bool
-isTimerOn model =
-    case model.timer of
-        Just _ ->
-            True
-
-        Nothing ->
-            False
-
-
 viewTaskActions : Model -> Task -> Html Msg
 viewTaskActions model task =
     let
         buttons =
-            if isTimerOn model then
-                if task.active then
+            if model.timer.isActive then
+                if task.isActive then
                     viewActiveTaskActions task
 
                 else
@@ -193,7 +182,7 @@ view : Model -> Html Msg
 view model =
     div [ class "app" ]
         [ viewHeader
-        , Timer.view model.timer
+        , Timer.view model.timer |> Html.map TimerMsg
         , viewTaskList model
         , viewNewTask model
         ]
@@ -205,10 +194,10 @@ type Msg
     | RemoveTask Task
     | UpdateTimer Task
     | SelectTask Task
-    | Tick Time.Posix
     | FocusResult (Result Browser.Dom.Error ())
     | OnKeyPressed String
     | StopTimer Task
+    | TimerMsg Timer.Msg
 
 
 getNewTaskId : Model -> Id
@@ -252,87 +241,9 @@ removeTask model taskToRemove =
 
 updateTimer : Model -> Task -> Model
 updateTimer model task =
-    let
-        newTimer =
-            case model.timer of
-                Nothing ->
-                    Timer.start model.timer task.description
-
-                Just timer ->
-                    Timer.shift timer task.description
-    in
-    { model | timer = Just newTimer }
-
-
-shiftTimer : Timer -> ( Maybe Timer, Cmd Msg )
-shiftTimer timer =
-    case timer.status of
-        Work 4 ->
-            let
-                newTimer =
-                    { timer
-                        | status = LongPause
-                        , initialValue = longPauseTimeout
-                        , timeout = longPauseTimeout
-                    }
-            in
-            ( Just newTimer, notify "Take some rest..." )
-
-        Work count ->
-            let
-                newTimer =
-                    { timer
-                        | status = Pause count
-                        , initialValue = pauseTimeout
-                        , timeout = pauseTimeout
-                    }
-            in
-            ( Just newTimer, notify "Take a breathe..." )
-
-        Pause _ ->
-            let
-                newTimer =
-                    { timer | status = Inactive }
-            in
-            ( Just newTimer, notify "Ready" )
-
-        LongPause ->
-            let
-                newTimer =
-                    { timer | status = Inactive }
-            in
-            ( Just newTimer, notify "Ready" )
-
-        _ ->
-            ( Just timer, Cmd.none )
-
-
-decreaseTimer : Timer -> ( Maybe Timer, Cmd Msg )
-decreaseTimer timer =
-    case timer.timeout of
-        0 ->
-            shiftTimer timer
-
-        _ ->
-            let
-                newTimer =
-                    { timer | timeout = timer.timeout - 1 }
-            in
-            ( Just newTimer, Cmd.none )
-
-
-updateTimerAtTick : Model -> ( Model, Cmd Msg )
-updateTimerAtTick model =
-    case model.timer of
-        Nothing ->
-            ( model, Cmd.none )
-
-        Just currentTimer ->
-            let
-                ( newTimer, cmd ) =
-                    decreaseTimer currentTimer
-            in
-            ( { model | timer = newTimer }, cmd )
+    { model
+        | timer = Timer.shift model.timer task.description
+    }
 
 
 send : Msg -> Cmd Msg
@@ -422,7 +333,7 @@ removeSelectedTask model maybeSelectedTask =
             model
 
         Just selectedTask ->
-            if isActiveTask model selectedTask then
+            if selectedTask.isActive then
                 model
 
             else
@@ -436,7 +347,7 @@ toggleTimerForSelectedTask model maybeSelectedTask =
             Cmd.none
 
         Just selectedTask ->
-            if isActiveTask model selectedTask then
+            if selectedTask.isActive then
                 send (StopTimer selectedTask)
 
             else
@@ -481,7 +392,7 @@ update msg model =
         UpdateTask "" ->
             let
                 task =
-                    Task 0 "" False
+                    Task 0 "" False False
             in
             ( { model | newTask = Just task }
             , Task.attempt FocusResult (focus "new-task-description")
@@ -493,7 +404,7 @@ update msg model =
         UpdateTask description ->
             let
                 task =
-                    Task 0 description False
+                    Task 0 description False False
             in
             ( { model | newTask = Just task }
             , Cmd.none
@@ -508,9 +419,6 @@ update msg model =
         SelectTask task ->
             ( { model | selectedTaskId = task.id }, Cmd.none )
 
-        Tick _ ->
-            updateTimerAtTick model
-
         OnKeyPressed key ->
             case model.newTask of
                 Nothing ->
@@ -520,8 +428,17 @@ update msg model =
                     ( model, Cmd.none )
 
         StopTimer task ->
-            ( { model | timer = Just (Timer task 0 0 Inactive) }
+            ( { model | timer = Timer.setActive model.timer False }
             , Cmd.none
+            )
+
+        TimerMsg timerMsg ->
+            let
+                ( newTimer, timerCmd ) =
+                    Timer.update timerMsg model.timer
+            in
+            ( { model | timer = newTimer }
+            , Cmd.map TimerMsg timerCmd
             )
 
 
@@ -533,8 +450,8 @@ keyDecoder =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ Time.every 1000 Tick
-        , onKeyPress <| map OnKeyPressed keyDecoder
+        [ onKeyPress <| map OnKeyPressed keyDecoder
+        , Sub.map TimerMsg (Timer.subscriptions model.timer)
         ]
 
 
