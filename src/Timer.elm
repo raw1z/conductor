@@ -1,4 +1,4 @@
-port module Timer exposing (Model, Msg, init, setActive, shift, subscriptions, update, view)
+port module Timer exposing (Model, Msg, init, resume, shift, stop, subscriptions, update, view)
 
 import Html exposing (..)
 import Html.Attributes exposing (class)
@@ -17,8 +17,7 @@ type Statuts
 
 
 type alias Model =
-    { label : String
-    , initialValue : Int
+    { initialValue : Int
     , timeout : Int
     , status : Statuts
     , isActive : Bool
@@ -27,7 +26,7 @@ type alias Model =
 
 init : Model
 init =
-    Model "Ready" 0 0 (Ready 1) False
+    Model 0 0 (Ready 1) False
 
 
 
@@ -39,7 +38,7 @@ getLabel model =
     if model.isActive then
         case model.status of
             Work _ ->
-                model.label
+                "Working hard..."
 
             Pause _ ->
                 "Take a breathe..."
@@ -54,9 +53,30 @@ getLabel model =
         "Ready to go"
 
 
-setActive : Model -> Bool -> Model
-setActive model isActive =
-    { model | isActive = isActive }
+stop : Model -> Model
+stop model =
+    case model.status of
+        Work count ->
+            { model
+                | isActive = False
+                , status = Ready count
+            }
+
+        _ ->
+            model
+
+
+resume : Model -> Model
+resume model =
+    case model.status of
+        Ready count ->
+            { model
+                | isActive = True
+                , status = Work count
+            }
+
+        _ ->
+            model
 
 
 
@@ -150,15 +170,14 @@ type Msg
     = Tick Time.Posix
 
 
-shiftModel : Model -> String -> Model
-shiftModel model label =
+shiftModel : Model -> Model
+shiftModel model =
     case model.status of
         Ready count ->
             { model
                 | status = Work count
                 , initialValue = 1500
                 , timeout = 0
-                , label = label
                 , isActive = True
             }
 
@@ -195,11 +214,11 @@ shiftModel model label =
             }
 
 
-shift : Model -> String -> ( Model, Cmd Msg )
-shift model label =
+shift : Model -> ( Model, Cmd Msg )
+shift model =
     let
         newModel =
-            shiftModel model label
+            shiftModel model
     in
     case model.status of
         Ready _ ->
@@ -216,7 +235,7 @@ update msg model =
     case msg of
         Tick _ ->
             if model.timeout == model.initialValue then
-                shift model model.label
+                shift model
 
             else
                 ( { model | timeout = model.timeout + 1 }

@@ -4368,17 +4368,16 @@ var _Bitwise_shiftRightZfBy = F2(function(offset, a)
 {
 	return a >>> offset;
 });
-var author$project$Timer$Model = F5(
-	function (label, initialValue, timeout, status, isActive) {
-		return {initialValue: initialValue, isActive: isActive, label: label, status: status, timeout: timeout};
+var author$project$Timer$Model = F4(
+	function (initialValue, timeout, status, isActive) {
+		return {initialValue: initialValue, isActive: isActive, status: status, timeout: timeout};
 	});
 var author$project$Timer$Ready = function (a) {
 	return {$: 'Ready', a: a};
 };
 var elm$core$Basics$False = {$: 'False'};
-var author$project$Timer$init = A5(
+var author$project$Timer$init = A4(
 	author$project$Timer$Model,
-	'Ready',
 	0,
 	0,
 	author$project$Timer$Ready(1),
@@ -5967,21 +5966,167 @@ var author$project$Pomodoro$send = function (msg) {
 		elm$core$Basics$identity,
 		elm$core$Task$succeed(msg));
 };
-var author$project$Pomodoro$StopTimer = function (a) {
-	return {$: 'StopTimer', a: a};
+var author$project$Timer$Work = function (a) {
+	return {$: 'Work', a: a};
 };
-var author$project$Pomodoro$UpdateTimer = function (a) {
-	return {$: 'UpdateTimer', a: a};
+var author$project$Timer$resume = function (model) {
+	var _n0 = model.status;
+	if (_n0.$ === 'Ready') {
+		var count = _n0.a;
+		return _Utils_update(
+			model,
+			{
+				isActive: true,
+				status: author$project$Timer$Work(count)
+			});
+	} else {
+		return model;
+	}
+};
+var author$project$Pomodoro$resumeTimer = function (model) {
+	return _Utils_Tuple2(
+		_Utils_update(
+			model,
+			{
+				timer: author$project$Timer$resume(model.timer)
+			}),
+		elm$core$Platform$Cmd$none);
+};
+var author$project$Timer$getLabel = function (model) {
+	if (model.isActive) {
+		var _n0 = model.status;
+		switch (_n0.$) {
+			case 'Work':
+				return 'Working hard...';
+			case 'Pause':
+				return 'Take a breathe...';
+			case 'LongPause':
+				return 'Take some rest...';
+			default:
+				return 'Ready to go';
+		}
+	} else {
+		return 'Ready to go';
+	}
+};
+var elm$json$Json$Encode$string = _Json_wrap;
+var author$project$Timer$notify = _Platform_outgoingPort('notify', elm$json$Json$Encode$string);
+var author$project$Timer$LongPause = {$: 'LongPause'};
+var author$project$Timer$Pause = function (a) {
+	return {$: 'Pause', a: a};
+};
+var author$project$Timer$shiftModel = function (model) {
+	var _n0 = model.status;
+	switch (_n0.$) {
+		case 'Ready':
+			var count = _n0.a;
+			return _Utils_update(
+				model,
+				{
+					initialValue: 1500,
+					isActive: true,
+					status: author$project$Timer$Work(count),
+					timeout: 0
+				});
+		case 'Work':
+			if (_n0.a === 4) {
+				return _Utils_update(
+					model,
+					{initialValue: 300, isActive: true, status: author$project$Timer$LongPause, timeout: 0});
+			} else {
+				var count = _n0.a;
+				return _Utils_update(
+					model,
+					{
+						initialValue: 1200,
+						isActive: true,
+						status: author$project$Timer$Pause(count),
+						timeout: 0
+					});
+			}
+		case 'Pause':
+			var count = _n0.a;
+			return _Utils_update(
+				model,
+				{
+					initialValue: 0,
+					isActive: false,
+					status: author$project$Timer$Ready(count + 1),
+					timeout: 0
+				});
+		default:
+			return _Utils_update(
+				model,
+				{
+					initialValue: 0,
+					isActive: false,
+					status: author$project$Timer$Ready(1),
+					timeout: 0
+				});
+	}
+};
+var author$project$Timer$shift = function (model) {
+	var newModel = author$project$Timer$shiftModel(model);
+	var _n0 = model.status;
+	if (_n0.$ === 'Ready') {
+		return _Utils_Tuple2(newModel, elm$core$Platform$Cmd$none);
+	} else {
+		return _Utils_Tuple2(
+			newModel,
+			author$project$Timer$notify(
+				author$project$Timer$getLabel(newModel)));
+	}
+};
+var elm$core$Platform$Cmd$map = _Platform_map;
+var author$project$Pomodoro$startTimer = F2(
+	function (model, task) {
+		var updateActiveTask = function (aTask) {
+			return _Utils_update(
+				aTask,
+				{
+					isActive: _Utils_eq(aTask.id, task.id)
+				});
+		};
+		var newTasks = A2(elm$core$List$map, updateActiveTask, model.tasks);
+		var _n0 = author$project$Timer$shift(model.timer);
+		var newTimer = _n0.a;
+		var timerCmd = _n0.b;
+		return _Utils_Tuple2(
+			_Utils_update(
+				model,
+				{tasks: newTasks, timer: newTimer}),
+			A2(elm$core$Platform$Cmd$map, author$project$Pomodoro$TimerMsg, timerCmd));
+	});
+var author$project$Timer$stop = function (model) {
+	var _n0 = model.status;
+	if (_n0.$ === 'Work') {
+		var count = _n0.a;
+		return _Utils_update(
+			model,
+			{
+				isActive: false,
+				status: author$project$Timer$Ready(count)
+			});
+	} else {
+		return model;
+	}
+};
+var author$project$Pomodoro$stopTimer = function (model) {
+	return _Utils_Tuple2(
+		_Utils_update(
+			model,
+			{
+				timer: author$project$Timer$stop(model.timer)
+			}),
+		elm$core$Platform$Cmd$none);
 };
 var author$project$Pomodoro$toggleTimerForSelectedTask = F2(
 	function (model, maybeSelectedTask) {
 		if (maybeSelectedTask.$ === 'Nothing') {
-			return elm$core$Platform$Cmd$none;
+			return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 		} else {
 			var selectedTask = maybeSelectedTask.a;
-			return selectedTask.isActive ? author$project$Pomodoro$send(
-				author$project$Pomodoro$StopTimer(selectedTask)) : author$project$Pomodoro$send(
-				author$project$Pomodoro$UpdateTimer(selectedTask));
+			return selectedTask.isActive ? (model.timer.isActive ? author$project$Pomodoro$stopTimer(model) : author$project$Pomodoro$resumeTimer(model)) : (model.timer.isActive ? _Utils_Tuple2(model, elm$core$Platform$Cmd$none) : A2(author$project$Pomodoro$startTimer, model, selectedTask));
 		}
 	});
 var author$project$Pomodoro$processKey = F2(
@@ -6006,9 +6151,7 @@ var author$project$Pomodoro$processKey = F2(
 					author$project$Pomodoro$selectPreviousTask(model),
 					elm$core$Platform$Cmd$none);
 			case 'Enter':
-				return _Utils_Tuple2(
-					model,
-					A2(author$project$Pomodoro$toggleTimerForSelectedTask, model, maybeSelectedTask));
+				return A2(author$project$Pomodoro$toggleTimerForSelectedTask, model, maybeSelectedTask);
 			case 'x':
 				return _Utils_Tuple2(
 					A2(author$project$Pomodoro$removeSelectedTask, model, maybeSelectedTask),
@@ -6017,118 +6160,9 @@ var author$project$Pomodoro$processKey = F2(
 				return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 		}
 	});
-var author$project$Timer$getLabel = function (model) {
-	if (model.isActive) {
-		var _n0 = model.status;
-		switch (_n0.$) {
-			case 'Work':
-				return model.label;
-			case 'Pause':
-				return 'Take a breathe...';
-			case 'LongPause':
-				return 'Take some rest...';
-			default:
-				return 'Ready to go';
-		}
-	} else {
-		return 'Ready to go';
-	}
-};
-var elm$json$Json$Encode$string = _Json_wrap;
-var author$project$Timer$notify = _Platform_outgoingPort('notify', elm$json$Json$Encode$string);
-var author$project$Timer$LongPause = {$: 'LongPause'};
-var author$project$Timer$Pause = function (a) {
-	return {$: 'Pause', a: a};
-};
-var author$project$Timer$Work = function (a) {
-	return {$: 'Work', a: a};
-};
-var author$project$Timer$shiftModel = F2(
-	function (model, label) {
-		var _n0 = model.status;
-		switch (_n0.$) {
-			case 'Ready':
-				var count = _n0.a;
-				return _Utils_update(
-					model,
-					{
-						initialValue: 1500,
-						isActive: true,
-						label: label,
-						status: author$project$Timer$Work(count),
-						timeout: 0
-					});
-			case 'Work':
-				if (_n0.a === 4) {
-					return _Utils_update(
-						model,
-						{initialValue: 300, isActive: true, status: author$project$Timer$LongPause, timeout: 0});
-				} else {
-					var count = _n0.a;
-					return _Utils_update(
-						model,
-						{
-							initialValue: 1200,
-							isActive: true,
-							status: author$project$Timer$Pause(count),
-							timeout: 0
-						});
-				}
-			case 'Pause':
-				var count = _n0.a;
-				return _Utils_update(
-					model,
-					{
-						initialValue: 0,
-						isActive: false,
-						status: author$project$Timer$Ready(count + 1),
-						timeout: 0
-					});
-			default:
-				return _Utils_update(
-					model,
-					{
-						initialValue: 0,
-						isActive: false,
-						status: author$project$Timer$Ready(1),
-						timeout: 0
-					});
-		}
-	});
-var author$project$Timer$shift = F2(
-	function (model, label) {
-		var newModel = A2(author$project$Timer$shiftModel, model, label);
-		var _n0 = model.status;
-		if (_n0.$ === 'Ready') {
-			return _Utils_Tuple2(newModel, elm$core$Platform$Cmd$none);
-		} else {
-			return _Utils_Tuple2(
-				newModel,
-				author$project$Timer$notify(
-					author$project$Timer$getLabel(newModel)));
-		}
-	});
-var elm$core$Platform$Cmd$map = _Platform_map;
-var author$project$Pomodoro$updateTimer = F2(
-	function (model, task) {
-		var _n0 = A2(author$project$Timer$shift, model.timer, task.description);
-		var newTimer = _n0.a;
-		var timerCmd = _n0.b;
-		return _Utils_Tuple2(
-			_Utils_update(
-				model,
-				{timer: newTimer}),
-			A2(elm$core$Platform$Cmd$map, author$project$Pomodoro$TimerMsg, timerCmd));
-	});
-var author$project$Timer$setActive = F2(
-	function (model, isActive) {
-		return _Utils_update(
-			model,
-			{isActive: isActive});
-	});
 var author$project$Timer$update = F2(
 	function (msg, model) {
-		return _Utils_eq(model.timeout, model.initialValue) ? A2(author$project$Timer$shift, model, model.label) : _Utils_Tuple2(
+		return _Utils_eq(model.timeout, model.initialValue) ? author$project$Timer$shift(model) : _Utils_Tuple2(
 			_Utils_update(
 				model,
 				{timeout: model.timeout + 1}),
@@ -6192,9 +6226,12 @@ var author$project$Pomodoro$update = F2(
 				return _Utils_Tuple2(
 					A2(author$project$Pomodoro$removeTask, model, task),
 					elm$core$Platform$Cmd$none);
-			case 'UpdateTimer':
+			case 'ToggleTimer':
 				var task = msg.a;
-				return A2(author$project$Pomodoro$updateTimer, model, task);
+				return A2(
+					author$project$Pomodoro$toggleTimerForSelectedTask,
+					model,
+					elm$core$Maybe$Just(task));
 			case 'SelectTask':
 				var task = msg.a;
 				return _Utils_Tuple2(
@@ -6210,15 +6247,6 @@ var author$project$Pomodoro$update = F2(
 				} else {
 					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 				}
-			case 'StopTimer':
-				var task = msg.a;
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							timer: A2(author$project$Timer$setActive, model.timer, false)
-						}),
-					elm$core$Platform$Cmd$none);
 			default:
 				var timerMsg = msg.a;
 				var _n2 = A2(author$project$Timer$update, timerMsg, model.timer);
@@ -6233,7 +6261,7 @@ var author$project$Pomodoro$update = F2(
 	});
 var elm$html$Html$a = _VirtualDom_node('a');
 var elm$html$Html$div = _VirtualDom_node('div');
-var elm$html$Html$h2 = _VirtualDom_node('h2');
+var elm$html$Html$h4 = _VirtualDom_node('h4');
 var elm$html$Html$i = _VirtualDom_node('i');
 var elm$html$Html$nav = _VirtualDom_node('nav');
 var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
@@ -6303,7 +6331,7 @@ var author$project$Pomodoro$viewHeader = A2(
 							_List_fromArray(
 								[
 									A2(
-									elm$html$Html$h2,
+									elm$html$Html$h4,
 									_List_Nil,
 									_List_fromArray(
 										[
@@ -6470,28 +6498,8 @@ var author$project$Pomodoro$viewNewTask = function (model) {
 var author$project$Pomodoro$SelectTask = function (a) {
 	return {$: 'SelectTask', a: a};
 };
-var author$project$Pomodoro$viewActiveTaskActions = function (task) {
-	return _List_fromArray(
-		[
-			A2(
-			elm$html$Html$button,
-			_List_fromArray(
-				[
-					elm$html$Html$Attributes$class('btn stop-task-btn'),
-					elm$html$Html$Events$onClick(
-					author$project$Pomodoro$StopTimer(task))
-				]),
-			_List_fromArray(
-				[
-					A2(
-					elm$html$Html$i,
-					_List_fromArray(
-						[
-							elm$html$Html$Attributes$class('fa fa-stop')
-						]),
-					_List_Nil)
-				]))
-		]);
+var author$project$Pomodoro$ToggleTimer = function (a) {
+	return {$: 'ToggleTimer', a: a};
 };
 var author$project$Pomodoro$RemoveTask = function (a) {
 	return {$: 'RemoveTask', a: a};
@@ -6523,7 +6531,7 @@ var author$project$Pomodoro$viewStartTaskButton = function (task) {
 			[
 				elm$html$Html$Attributes$class('btn start-task-btn'),
 				elm$html$Html$Events$onClick(
-				author$project$Pomodoro$UpdateTimer(task))
+				author$project$Pomodoro$ToggleTimer(task))
 			]),
 		_List_fromArray(
 			[
@@ -6536,16 +6544,42 @@ var author$project$Pomodoro$viewStartTaskButton = function (task) {
 				_List_Nil)
 			]));
 };
+var author$project$Pomodoro$viewStopTaskButton = function (task) {
+	return A2(
+		elm$html$Html$button,
+		_List_fromArray(
+			[
+				elm$html$Html$Attributes$class('btn stop-task-btn'),
+				elm$html$Html$Events$onClick(
+				author$project$Pomodoro$ToggleTimer(task))
+			]),
+		_List_fromArray(
+			[
+				A2(
+				elm$html$Html$i,
+				_List_fromArray(
+					[
+						elm$html$Html$Attributes$class('fa fa-stop')
+					]),
+				_List_Nil)
+			]));
+};
 var author$project$Pomodoro$viewTaskActions = F2(
 	function (model, task) {
-		var buttons = model.timer.isActive ? (task.isActive ? author$project$Pomodoro$viewActiveTaskActions(task) : _List_fromArray(
+		var buttons = task.isActive ? (model.timer.isActive ? _List_fromArray(
+			[
+				author$project$Pomodoro$viewStopTaskButton(task)
+			]) : _List_fromArray(
+			[
+				author$project$Pomodoro$viewStartTaskButton(task)
+			])) : (model.timer.isActive ? _List_fromArray(
 			[
 				author$project$Pomodoro$viewRemoveTaskButton(task)
-			])) : _List_fromArray(
+			]) : _List_fromArray(
 			[
 				author$project$Pomodoro$viewStartTaskButton(task),
 				author$project$Pomodoro$viewRemoveTaskButton(task)
-			]);
+			]));
 		return A2(
 			elm$html$Html$div,
 			_List_fromArray(
@@ -6555,6 +6589,20 @@ var author$project$Pomodoro$viewTaskActions = F2(
 			buttons);
 	});
 var elm$html$Html$li = _VirtualDom_node('li');
+var elm$core$Tuple$second = function (_n0) {
+	var y = _n0.b;
+	return y;
+};
+var elm$html$Html$Attributes$classList = function (classes) {
+	return elm$html$Html$Attributes$class(
+		A2(
+			elm$core$String$join,
+			' ',
+			A2(
+				elm$core$List$map,
+				elm$core$Tuple$first,
+				A2(elm$core$List$filter, elm$core$Tuple$second, classes))));
+};
 var elm$html$Html$Events$onDoubleClick = function (msg) {
 	return A2(
 		elm$html$Html$Events$on,
@@ -6563,12 +6611,19 @@ var elm$html$Html$Events$onDoubleClick = function (msg) {
 };
 var author$project$Pomodoro$viewTask = F2(
 	function (model, task) {
-		var classNames = _Utils_eq(model.selectedTaskId, task.id) ? 'task d-flex active' : 'task d-flex';
 		return A2(
 			elm$html$Html$li,
 			_List_fromArray(
 				[
-					elm$html$Html$Attributes$class(classNames)
+					elm$html$Html$Attributes$classList(
+					_List_fromArray(
+						[
+							_Utils_Tuple2('task d-flex', true),
+							_Utils_Tuple2(
+							'selected',
+							_Utils_eq(model.selectedTaskId, task.id)),
+							_Utils_Tuple2('active', task.isActive)
+						]))
 				]),
 			_List_fromArray(
 				[
@@ -6578,7 +6633,7 @@ var author$project$Pomodoro$viewTask = F2(
 						[
 							elm$html$Html$Attributes$class('desc flex-fill'),
 							elm$html$Html$Events$onDoubleClick(
-							author$project$Pomodoro$UpdateTimer(task)),
+							author$project$Pomodoro$ToggleTimer(task)),
 							elm$html$Html$Events$onClick(
 							author$project$Pomodoro$SelectTask(task))
 						]),
