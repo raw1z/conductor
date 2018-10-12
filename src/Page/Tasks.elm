@@ -47,34 +47,19 @@ init =
     ( initialModel, Cmd.none )
 
 
-
--- viewHeader : Html Msg
--- viewHeader =
---     nav [ class "header" ]
---         [ div [ class "container" ]
---             [ div [ class "row" ]
---                 [ div [ class "col-10 d-flex align-items-center" ]
---                     [ h4 [] [ text "Conductor" ]
---                     ]
---                 , div [ class "col-2 d-flex align-items-center justify-content-end" ]
---                     [ a
---                         [ href "#"
---                         , id "new-task-btn"
---                         , onClick (UpdateTask "")
---                         ]
---                         [ i [ class "fa fa-plus fa-2x" ] []
---                         ]
---                     ]
---                 ]
---             ]
---         ]
-
-
 viewNewTask : Model -> Html Msg
 viewNewTask model =
     case model.newTask of
         Nothing ->
-            div [] []
+            div [ class "new-task d-flex justify-content-center" ]
+                [ a
+                    [ href "#"
+                    , id "new-task-btn"
+                    , onClick (UpdateTask "")
+                    ]
+                    [ i [ class "fa fa-plus" ] []
+                    ]
+                ]
 
         Just task ->
             div [ class "new-task" ]

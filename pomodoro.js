@@ -7022,6 +7022,7 @@ var author$project$Pomodoro$update = F2(
 		}
 	});
 var author$project$Page$Tasks$SaveTask = {$: 'SaveTask'};
+var elm$html$Html$a = _VirtualDom_node('a');
 var elm$html$Html$button = _VirtualDom_node('button');
 var elm$html$Html$div = _VirtualDom_node('div');
 var elm$html$Html$form = _VirtualDom_node('form');
@@ -7044,17 +7045,39 @@ var elm$html$Html$Attributes$boolProperty = F2(
 			elm$json$Json$Encode$bool(bool));
 	});
 var elm$html$Html$Attributes$disabled = elm$html$Html$Attributes$boolProperty('disabled');
+var elm$html$Html$Attributes$href = function (url) {
+	return A2(
+		elm$html$Html$Attributes$stringProperty,
+		'href',
+		_VirtualDom_noJavaScriptUri(url));
+};
 var elm$html$Html$Attributes$id = elm$html$Html$Attributes$stringProperty('id');
 var elm$html$Html$Attributes$placeholder = elm$html$Html$Attributes$stringProperty('placeholder');
 var elm$html$Html$Attributes$type_ = elm$html$Html$Attributes$stringProperty('type');
 var elm$html$Html$Attributes$value = elm$html$Html$Attributes$stringProperty('value');
+var elm$virtual_dom$VirtualDom$Normal = function (a) {
+	return {$: 'Normal', a: a};
+};
+var elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
+var elm$html$Html$Events$on = F2(
+	function (event, decoder) {
+		return A2(
+			elm$virtual_dom$VirtualDom$on,
+			event,
+			elm$virtual_dom$VirtualDom$Normal(decoder));
+	});
+var elm$html$Html$Events$onClick = function (msg) {
+	return A2(
+		elm$html$Html$Events$on,
+		'click',
+		elm$json$Json$Decode$succeed(msg));
+};
 var elm$html$Html$Events$alwaysStop = function (x) {
 	return _Utils_Tuple2(x, true);
 };
 var elm$virtual_dom$VirtualDom$MayStopPropagation = function (a) {
 	return {$: 'MayStopPropagation', a: a};
 };
-var elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
 var elm$html$Html$Events$stopPropagationOn = F2(
 	function (event, decoder) {
 		return A2(
@@ -7105,7 +7128,34 @@ var elm$html$Html$Events$onSubmit = function (msg) {
 var author$project$Page$Tasks$viewNewTask = function (model) {
 	var _n0 = model.newTask;
 	if (_n0.$ === 'Nothing') {
-		return A2(elm$html$Html$div, _List_Nil, _List_Nil);
+		return A2(
+			elm$html$Html$div,
+			_List_fromArray(
+				[
+					elm$html$Html$Attributes$class('new-task d-flex justify-content-center')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					elm$html$Html$a,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$href('#'),
+							elm$html$Html$Attributes$id('new-task-btn'),
+							elm$html$Html$Events$onClick(
+							author$project$Page$Tasks$UpdateTask(''))
+						]),
+					_List_fromArray(
+						[
+							A2(
+							elm$html$Html$i,
+							_List_fromArray(
+								[
+									elm$html$Html$Attributes$class('fa fa-plus')
+								]),
+							_List_Nil)
+						]))
+				]));
 	} else {
 		var task = _n0.a;
 		return A2(
@@ -7167,22 +7217,6 @@ var author$project$Page$Tasks$ToggleTimer = function (a) {
 };
 var author$project$Page$Tasks$RemoveTask = function (a) {
 	return {$: 'RemoveTask', a: a};
-};
-var elm$virtual_dom$VirtualDom$Normal = function (a) {
-	return {$: 'Normal', a: a};
-};
-var elm$html$Html$Events$on = F2(
-	function (event, decoder) {
-		return A2(
-			elm$virtual_dom$VirtualDom$on,
-			event,
-			elm$virtual_dom$VirtualDom$Normal(decoder));
-	});
-var elm$html$Html$Events$onClick = function (msg) {
-	return A2(
-		elm$html$Html$Events$on,
-		'click',
-		elm$json$Json$Decode$succeed(msg));
 };
 var author$project$Page$Tasks$viewRemoveTaskButton = function (task) {
 	return A2(
