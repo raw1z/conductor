@@ -10,28 +10,21 @@ body {
   color: $white;
 }
 
-.header {
-  background-color: $gray-900;
-  font-weight: $font-weight-light;
-
-  h4 {
-    margin: 0;
-    padding: 0;
-  }
+.new-task {
+  border-bottom: thin solid $gray-700;
 
   #new-task-btn {
     color: $gray-500;
     cursor: pointer;
     text-decoration: none;
+    padding: 0.5rem;
+    width: 100%;
+    text-align: center;
 
     &:hover {
       color: $success;
     }
   }
-}
-
-.new-task {
-  border-bottom: thin solid $gray-700;
 
   .btn {
     border-radius: 0;

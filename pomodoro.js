@@ -2297,6 +2297,23 @@ function _Platform_mergeExportsDebug(moduleName, obj, exports)
 }
 
 
+function _Url_percentEncode(string)
+{
+	return encodeURIComponent(string);
+}
+
+function _Url_percentDecode(string)
+{
+	try
+	{
+		return elm$core$Maybe$Just(decodeURIComponent(string));
+	}
+	catch (e)
+	{
+		return elm$core$Maybe$Nothing;
+	}
+}
+
 
 function _Time_now(millisToPosix)
 {
@@ -4368,6 +4385,15 @@ var _Bitwise_shiftRightZfBy = F2(function(offset, a)
 {
 	return a >>> offset;
 });
+var author$project$Pomodoro$LinkClicked = function (a) {
+	return {$: 'LinkClicked', a: a};
+};
+var author$project$Pomodoro$UrlChanged = function (a) {
+	return {$: 'UrlChanged', a: a};
+};
+var author$project$Page$Tasks = function (a) {
+	return {$: 'Tasks', a: a};
+};
 var author$project$Timer$Model = F4(
 	function (initialValue, timeout, status, isActive) {
 		return {initialValue: initialValue, isActive: isActive, status: status, timeout: timeout};
@@ -4463,7 +4489,7 @@ var elm$core$Set$toList = function (_n0) {
 	var dict = _n0.a;
 	return elm$core$Dict$keys(dict);
 };
-var author$project$Pomodoro$initialModel = {lastNewId: 0, newTask: elm$core$Maybe$Nothing, selectedTaskId: 0, tasks: _List_Nil, timer: author$project$Timer$init};
+var author$project$Page$Tasks$initialModel = {lastNewId: 0, newTask: elm$core$Maybe$Nothing, selectedTaskId: 0, tasks: _List_Nil, timer: author$project$Timer$init};
 var elm$core$Basics$True = {$: 'True'};
 var elm$core$Result$isOk = function (result) {
 	if (result.$ === 'Ok') {
@@ -4859,45 +4885,299 @@ var elm$json$Json$Decode$errorToStringHelp = F2(
 	});
 var elm$core$Platform$Cmd$batch = _Platform_batch;
 var elm$core$Platform$Cmd$none = elm$core$Platform$Cmd$batch(_List_Nil);
-var author$project$Pomodoro$init = function (_n0) {
-	return _Utils_Tuple2(author$project$Pomodoro$initialModel, elm$core$Platform$Cmd$none);
+var author$project$Page$Tasks$init = _Utils_Tuple2(author$project$Page$Tasks$initialModel, elm$core$Platform$Cmd$none);
+var author$project$Pomodoro$TasksMsg = function (a) {
+	return {$: 'TasksMsg', a: a};
 };
-var author$project$Pomodoro$OnKeyPressed = function (a) {
-	return {$: 'OnKeyPressed', a: a};
-};
-var author$project$Pomodoro$TimerMsg = function (a) {
-	return {$: 'TimerMsg', a: a};
-};
-var elm$json$Json$Decode$field = _Json_decodeField;
-var elm$json$Json$Decode$string = _Json_decodeString;
-var author$project$Pomodoro$keyDecoder = A2(elm$json$Json$Decode$field, 'key', elm$json$Json$Decode$string);
-var author$project$Timer$Tick = function (a) {
-	return {$: 'Tick', a: a};
-};
+var author$project$Pomodoro$setCurrentPage = F2(
+	function (model, page) {
+		return _Utils_update(
+			model,
+			{currentPage: page});
+	});
 var elm$core$Basics$identity = function (x) {
 	return x;
 };
-var elm$core$Platform$Sub$batch = _Platform_batch;
-var elm$core$Platform$Sub$none = elm$core$Platform$Sub$batch(_List_Nil);
-var elm$time$Time$Every = F2(
-	function (a, b) {
-		return {$: 'Every', a: a, b: b};
+var elm$core$Platform$Cmd$map = _Platform_map;
+var author$project$Pomodoro$changeRouteTo = F2(
+	function (maybeRoute, model) {
+		var changeRouteToPage = F3(
+			function (page, pageMsg, _n2) {
+				var pageModel = _n2.a;
+				var pageCmd = _n2.b;
+				return _Utils_Tuple2(
+					A2(
+						author$project$Pomodoro$setCurrentPage,
+						model,
+						page(pageModel)),
+					A2(elm$core$Platform$Cmd$map, pageMsg, pageCmd));
+			});
+		if (maybeRoute.$ === 'Nothing') {
+			return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+		} else {
+			var _n1 = maybeRoute.a;
+			return A3(changeRouteToPage, author$project$Page$Tasks, author$project$Pomodoro$TasksMsg, author$project$Page$Tasks$init);
+		}
 	});
+var author$project$Route$Tasks = {$: 'Tasks'};
+var elm$core$List$foldrHelper = F4(
+	function (fn, acc, ctr, ls) {
+		if (!ls.b) {
+			return acc;
+		} else {
+			var a = ls.a;
+			var r1 = ls.b;
+			if (!r1.b) {
+				return A2(fn, a, acc);
+			} else {
+				var b = r1.a;
+				var r2 = r1.b;
+				if (!r2.b) {
+					return A2(
+						fn,
+						a,
+						A2(fn, b, acc));
+				} else {
+					var c = r2.a;
+					var r3 = r2.b;
+					if (!r3.b) {
+						return A2(
+							fn,
+							a,
+							A2(
+								fn,
+								b,
+								A2(fn, c, acc)));
+					} else {
+						var d = r3.a;
+						var r4 = r3.b;
+						var res = (ctr > 500) ? A3(
+							elm$core$List$foldl,
+							fn,
+							acc,
+							elm$core$List$reverse(r4)) : A4(elm$core$List$foldrHelper, fn, acc, ctr + 1, r4);
+						return A2(
+							fn,
+							a,
+							A2(
+								fn,
+								b,
+								A2(
+									fn,
+									c,
+									A2(fn, d, res))));
+					}
+				}
+			}
+		}
+	});
+var elm$core$List$foldr = F3(
+	function (fn, acc, ls) {
+		return A4(elm$core$List$foldrHelper, fn, acc, 0, ls);
+	});
+var elm$core$List$map = F2(
+	function (f, xs) {
+		return A3(
+			elm$core$List$foldr,
+			F2(
+				function (x, acc) {
+					return A2(
+						elm$core$List$cons,
+						f(x),
+						acc);
+				}),
+			_List_Nil,
+			xs);
+	});
+var elm$url$Url$Parser$Parser = function (a) {
+	return {$: 'Parser', a: a};
+};
+var elm$url$Url$Parser$State = F5(
+	function (visited, unvisited, params, frag, value) {
+		return {frag: frag, params: params, unvisited: unvisited, value: value, visited: visited};
+	});
+var elm$url$Url$Parser$mapState = F2(
+	function (func, _n0) {
+		var visited = _n0.visited;
+		var unvisited = _n0.unvisited;
+		var params = _n0.params;
+		var frag = _n0.frag;
+		var value = _n0.value;
+		return A5(
+			elm$url$Url$Parser$State,
+			visited,
+			unvisited,
+			params,
+			frag,
+			func(value));
+	});
+var elm$url$Url$Parser$map = F2(
+	function (subValue, _n0) {
+		var parseArg = _n0.a;
+		return elm$url$Url$Parser$Parser(
+			function (_n1) {
+				var visited = _n1.visited;
+				var unvisited = _n1.unvisited;
+				var params = _n1.params;
+				var frag = _n1.frag;
+				var value = _n1.value;
+				return A2(
+					elm$core$List$map,
+					elm$url$Url$Parser$mapState(value),
+					parseArg(
+						A5(elm$url$Url$Parser$State, visited, unvisited, params, frag, subValue)));
+			});
+	});
+var elm$core$List$append = F2(
+	function (xs, ys) {
+		if (!ys.b) {
+			return xs;
+		} else {
+			return A3(elm$core$List$foldr, elm$core$List$cons, ys, xs);
+		}
+	});
+var elm$core$List$concat = function (lists) {
+	return A3(elm$core$List$foldr, elm$core$List$append, _List_Nil, lists);
+};
+var elm$core$List$concatMap = F2(
+	function (f, list) {
+		return elm$core$List$concat(
+			A2(elm$core$List$map, f, list));
+	});
+var elm$url$Url$Parser$oneOf = function (parsers) {
+	return elm$url$Url$Parser$Parser(
+		function (state) {
+			return A2(
+				elm$core$List$concatMap,
+				function (_n0) {
+					var parser = _n0.a;
+					return parser(state);
+				},
+				parsers);
+		});
+};
+var elm$url$Url$Parser$s = function (str) {
+	return elm$url$Url$Parser$Parser(
+		function (_n0) {
+			var visited = _n0.visited;
+			var unvisited = _n0.unvisited;
+			var params = _n0.params;
+			var frag = _n0.frag;
+			var value = _n0.value;
+			if (!unvisited.b) {
+				return _List_Nil;
+			} else {
+				var next = unvisited.a;
+				var rest = unvisited.b;
+				return _Utils_eq(next, str) ? _List_fromArray(
+					[
+						A5(
+						elm$url$Url$Parser$State,
+						A2(elm$core$List$cons, next, visited),
+						rest,
+						params,
+						frag,
+						value)
+					]) : _List_Nil;
+			}
+		});
+};
+var author$project$Route$parser = elm$url$Url$Parser$oneOf(
+	_List_fromArray(
+		[
+			A2(
+			elm$url$Url$Parser$map,
+			author$project$Route$Tasks,
+			elm$url$Url$Parser$s('tasks'))
+		]));
+var elm$url$Url$Parser$getFirstMatch = function (states) {
+	getFirstMatch:
+	while (true) {
+		if (!states.b) {
+			return elm$core$Maybe$Nothing;
+		} else {
+			var state = states.a;
+			var rest = states.b;
+			var _n1 = state.unvisited;
+			if (!_n1.b) {
+				return elm$core$Maybe$Just(state.value);
+			} else {
+				if ((_n1.a === '') && (!_n1.b.b)) {
+					return elm$core$Maybe$Just(state.value);
+				} else {
+					var $temp$states = rest;
+					states = $temp$states;
+					continue getFirstMatch;
+				}
+			}
+		}
+	}
+};
+var elm$url$Url$Parser$removeFinalEmpty = function (segments) {
+	if (!segments.b) {
+		return _List_Nil;
+	} else {
+		if ((segments.a === '') && (!segments.b.b)) {
+			return _List_Nil;
+		} else {
+			var segment = segments.a;
+			var rest = segments.b;
+			return A2(
+				elm$core$List$cons,
+				segment,
+				elm$url$Url$Parser$removeFinalEmpty(rest));
+		}
+	}
+};
+var elm$url$Url$Parser$preparePath = function (path) {
+	var _n0 = A2(elm$core$String$split, '/', path);
+	if (_n0.b && (_n0.a === '')) {
+		var segments = _n0.b;
+		return elm$url$Url$Parser$removeFinalEmpty(segments);
+	} else {
+		var segments = _n0;
+		return elm$url$Url$Parser$removeFinalEmpty(segments);
+	}
+};
 var elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
 var elm$core$Dict$empty = elm$core$Dict$RBEmpty_elm_builtin;
-var elm$core$Task$succeed = _Scheduler_succeed;
-var elm$time$Time$State = F2(
-	function (taggers, processes) {
-		return {processes: processes, taggers: taggers};
+var elm$core$Basics$compare = _Utils_compare;
+var elm$core$Dict$get = F2(
+	function (targetKey, dict) {
+		get:
+		while (true) {
+			if (dict.$ === 'RBEmpty_elm_builtin') {
+				return elm$core$Maybe$Nothing;
+			} else {
+				var key = dict.b;
+				var value = dict.c;
+				var left = dict.d;
+				var right = dict.e;
+				var _n1 = A2(elm$core$Basics$compare, targetKey, key);
+				switch (_n1.$) {
+					case 'LT':
+						var $temp$targetKey = targetKey,
+							$temp$dict = left;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+					case 'EQ':
+						return elm$core$Maybe$Just(value);
+					default:
+						var $temp$targetKey = targetKey,
+							$temp$dict = right;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+				}
+			}
+		}
 	});
-var elm$time$Time$init = elm$core$Task$succeed(
-	A2(elm$time$Time$State, elm$core$Dict$empty, elm$core$Dict$empty));
 var elm$core$Dict$Black = {$: 'Black'};
 var elm$core$Dict$RBNode_elm_builtin = F5(
 	function (a, b, c, d, e) {
 		return {$: 'RBNode_elm_builtin', a: a, b: b, c: c, d: d, e: e};
 	});
-var elm$core$Basics$compare = _Utils_compare;
 var elm$core$Dict$Red = {$: 'Red'};
 var elm$core$Dict$balance = F5(
 	function (color, key, value, left, right) {
@@ -5001,6 +5281,484 @@ var elm$core$Dict$insert = F3(
 			return x;
 		}
 	});
+var elm$core$Dict$getMin = function (dict) {
+	getMin:
+	while (true) {
+		if ((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) {
+			var left = dict.d;
+			var $temp$dict = left;
+			dict = $temp$dict;
+			continue getMin;
+		} else {
+			return dict;
+		}
+	}
+};
+var elm$core$Dict$moveRedLeft = function (dict) {
+	if (((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) && (dict.e.$ === 'RBNode_elm_builtin')) {
+		if ((dict.e.d.$ === 'RBNode_elm_builtin') && (dict.e.d.a.$ === 'Red')) {
+			var clr = dict.a;
+			var k = dict.b;
+			var v = dict.c;
+			var _n1 = dict.d;
+			var lClr = _n1.a;
+			var lK = _n1.b;
+			var lV = _n1.c;
+			var lLeft = _n1.d;
+			var lRight = _n1.e;
+			var _n2 = dict.e;
+			var rClr = _n2.a;
+			var rK = _n2.b;
+			var rV = _n2.c;
+			var rLeft = _n2.d;
+			var _n3 = rLeft.a;
+			var rlK = rLeft.b;
+			var rlV = rLeft.c;
+			var rlL = rLeft.d;
+			var rlR = rLeft.e;
+			var rRight = _n2.e;
+			return A5(
+				elm$core$Dict$RBNode_elm_builtin,
+				elm$core$Dict$Red,
+				rlK,
+				rlV,
+				A5(
+					elm$core$Dict$RBNode_elm_builtin,
+					elm$core$Dict$Black,
+					k,
+					v,
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					rlL),
+				A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, rK, rV, rlR, rRight));
+		} else {
+			var clr = dict.a;
+			var k = dict.b;
+			var v = dict.c;
+			var _n4 = dict.d;
+			var lClr = _n4.a;
+			var lK = _n4.b;
+			var lV = _n4.c;
+			var lLeft = _n4.d;
+			var lRight = _n4.e;
+			var _n5 = dict.e;
+			var rClr = _n5.a;
+			var rK = _n5.b;
+			var rV = _n5.c;
+			var rLeft = _n5.d;
+			var rRight = _n5.e;
+			if (clr.$ === 'Black') {
+				return A5(
+					elm$core$Dict$RBNode_elm_builtin,
+					elm$core$Dict$Black,
+					k,
+					v,
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Red, rK, rV, rLeft, rRight));
+			} else {
+				return A5(
+					elm$core$Dict$RBNode_elm_builtin,
+					elm$core$Dict$Black,
+					k,
+					v,
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Red, rK, rV, rLeft, rRight));
+			}
+		}
+	} else {
+		return dict;
+	}
+};
+var elm$core$Dict$moveRedRight = function (dict) {
+	if (((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) && (dict.e.$ === 'RBNode_elm_builtin')) {
+		if ((dict.d.d.$ === 'RBNode_elm_builtin') && (dict.d.d.a.$ === 'Red')) {
+			var clr = dict.a;
+			var k = dict.b;
+			var v = dict.c;
+			var _n1 = dict.d;
+			var lClr = _n1.a;
+			var lK = _n1.b;
+			var lV = _n1.c;
+			var _n2 = _n1.d;
+			var _n3 = _n2.a;
+			var llK = _n2.b;
+			var llV = _n2.c;
+			var llLeft = _n2.d;
+			var llRight = _n2.e;
+			var lRight = _n1.e;
+			var _n4 = dict.e;
+			var rClr = _n4.a;
+			var rK = _n4.b;
+			var rV = _n4.c;
+			var rLeft = _n4.d;
+			var rRight = _n4.e;
+			return A5(
+				elm$core$Dict$RBNode_elm_builtin,
+				elm$core$Dict$Red,
+				lK,
+				lV,
+				A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, llK, llV, llLeft, llRight),
+				A5(
+					elm$core$Dict$RBNode_elm_builtin,
+					elm$core$Dict$Black,
+					k,
+					v,
+					lRight,
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Red, rK, rV, rLeft, rRight)));
+		} else {
+			var clr = dict.a;
+			var k = dict.b;
+			var v = dict.c;
+			var _n5 = dict.d;
+			var lClr = _n5.a;
+			var lK = _n5.b;
+			var lV = _n5.c;
+			var lLeft = _n5.d;
+			var lRight = _n5.e;
+			var _n6 = dict.e;
+			var rClr = _n6.a;
+			var rK = _n6.b;
+			var rV = _n6.c;
+			var rLeft = _n6.d;
+			var rRight = _n6.e;
+			if (clr.$ === 'Black') {
+				return A5(
+					elm$core$Dict$RBNode_elm_builtin,
+					elm$core$Dict$Black,
+					k,
+					v,
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Red, rK, rV, rLeft, rRight));
+			} else {
+				return A5(
+					elm$core$Dict$RBNode_elm_builtin,
+					elm$core$Dict$Black,
+					k,
+					v,
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Red, rK, rV, rLeft, rRight));
+			}
+		}
+	} else {
+		return dict;
+	}
+};
+var elm$core$Dict$removeHelpPrepEQGT = F7(
+	function (targetKey, dict, color, key, value, left, right) {
+		if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) {
+			var _n1 = left.a;
+			var lK = left.b;
+			var lV = left.c;
+			var lLeft = left.d;
+			var lRight = left.e;
+			return A5(
+				elm$core$Dict$RBNode_elm_builtin,
+				color,
+				lK,
+				lV,
+				lLeft,
+				A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Red, key, value, lRight, right));
+		} else {
+			_n2$2:
+			while (true) {
+				if ((right.$ === 'RBNode_elm_builtin') && (right.a.$ === 'Black')) {
+					if (right.d.$ === 'RBNode_elm_builtin') {
+						if (right.d.a.$ === 'Black') {
+							var _n3 = right.a;
+							var _n4 = right.d;
+							var _n5 = _n4.a;
+							return elm$core$Dict$moveRedRight(dict);
+						} else {
+							break _n2$2;
+						}
+					} else {
+						var _n6 = right.a;
+						var _n7 = right.d;
+						return elm$core$Dict$moveRedRight(dict);
+					}
+				} else {
+					break _n2$2;
+				}
+			}
+			return dict;
+		}
+	});
+var elm$core$Dict$removeMin = function (dict) {
+	if ((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) {
+		var color = dict.a;
+		var key = dict.b;
+		var value = dict.c;
+		var left = dict.d;
+		var lColor = left.a;
+		var lLeft = left.d;
+		var right = dict.e;
+		if (lColor.$ === 'Black') {
+			if ((lLeft.$ === 'RBNode_elm_builtin') && (lLeft.a.$ === 'Red')) {
+				var _n3 = lLeft.a;
+				return A5(
+					elm$core$Dict$RBNode_elm_builtin,
+					color,
+					key,
+					value,
+					elm$core$Dict$removeMin(left),
+					right);
+			} else {
+				var _n4 = elm$core$Dict$moveRedLeft(dict);
+				if (_n4.$ === 'RBNode_elm_builtin') {
+					var nColor = _n4.a;
+					var nKey = _n4.b;
+					var nValue = _n4.c;
+					var nLeft = _n4.d;
+					var nRight = _n4.e;
+					return A5(
+						elm$core$Dict$balance,
+						nColor,
+						nKey,
+						nValue,
+						elm$core$Dict$removeMin(nLeft),
+						nRight);
+				} else {
+					return elm$core$Dict$RBEmpty_elm_builtin;
+				}
+			}
+		} else {
+			return A5(
+				elm$core$Dict$RBNode_elm_builtin,
+				color,
+				key,
+				value,
+				elm$core$Dict$removeMin(left),
+				right);
+		}
+	} else {
+		return elm$core$Dict$RBEmpty_elm_builtin;
+	}
+};
+var elm$core$Dict$removeHelp = F2(
+	function (targetKey, dict) {
+		if (dict.$ === 'RBEmpty_elm_builtin') {
+			return elm$core$Dict$RBEmpty_elm_builtin;
+		} else {
+			var color = dict.a;
+			var key = dict.b;
+			var value = dict.c;
+			var left = dict.d;
+			var right = dict.e;
+			if (_Utils_cmp(targetKey, key) < 0) {
+				if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Black')) {
+					var _n4 = left.a;
+					var lLeft = left.d;
+					if ((lLeft.$ === 'RBNode_elm_builtin') && (lLeft.a.$ === 'Red')) {
+						var _n6 = lLeft.a;
+						return A5(
+							elm$core$Dict$RBNode_elm_builtin,
+							color,
+							key,
+							value,
+							A2(elm$core$Dict$removeHelp, targetKey, left),
+							right);
+					} else {
+						var _n7 = elm$core$Dict$moveRedLeft(dict);
+						if (_n7.$ === 'RBNode_elm_builtin') {
+							var nColor = _n7.a;
+							var nKey = _n7.b;
+							var nValue = _n7.c;
+							var nLeft = _n7.d;
+							var nRight = _n7.e;
+							return A5(
+								elm$core$Dict$balance,
+								nColor,
+								nKey,
+								nValue,
+								A2(elm$core$Dict$removeHelp, targetKey, nLeft),
+								nRight);
+						} else {
+							return elm$core$Dict$RBEmpty_elm_builtin;
+						}
+					}
+				} else {
+					return A5(
+						elm$core$Dict$RBNode_elm_builtin,
+						color,
+						key,
+						value,
+						A2(elm$core$Dict$removeHelp, targetKey, left),
+						right);
+				}
+			} else {
+				return A2(
+					elm$core$Dict$removeHelpEQGT,
+					targetKey,
+					A7(elm$core$Dict$removeHelpPrepEQGT, targetKey, dict, color, key, value, left, right));
+			}
+		}
+	});
+var elm$core$Dict$removeHelpEQGT = F2(
+	function (targetKey, dict) {
+		if (dict.$ === 'RBNode_elm_builtin') {
+			var color = dict.a;
+			var key = dict.b;
+			var value = dict.c;
+			var left = dict.d;
+			var right = dict.e;
+			if (_Utils_eq(targetKey, key)) {
+				var _n1 = elm$core$Dict$getMin(right);
+				if (_n1.$ === 'RBNode_elm_builtin') {
+					var minKey = _n1.b;
+					var minValue = _n1.c;
+					return A5(
+						elm$core$Dict$balance,
+						color,
+						minKey,
+						minValue,
+						left,
+						elm$core$Dict$removeMin(right));
+				} else {
+					return elm$core$Dict$RBEmpty_elm_builtin;
+				}
+			} else {
+				return A5(
+					elm$core$Dict$balance,
+					color,
+					key,
+					value,
+					left,
+					A2(elm$core$Dict$removeHelp, targetKey, right));
+			}
+		} else {
+			return elm$core$Dict$RBEmpty_elm_builtin;
+		}
+	});
+var elm$core$Dict$remove = F2(
+	function (key, dict) {
+		var _n0 = A2(elm$core$Dict$removeHelp, key, dict);
+		if ((_n0.$ === 'RBNode_elm_builtin') && (_n0.a.$ === 'Red')) {
+			var _n1 = _n0.a;
+			var k = _n0.b;
+			var v = _n0.c;
+			var l = _n0.d;
+			var r = _n0.e;
+			return A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, k, v, l, r);
+		} else {
+			var x = _n0;
+			return x;
+		}
+	});
+var elm$core$Dict$update = F3(
+	function (targetKey, alter, dictionary) {
+		var _n0 = alter(
+			A2(elm$core$Dict$get, targetKey, dictionary));
+		if (_n0.$ === 'Just') {
+			var value = _n0.a;
+			return A3(elm$core$Dict$insert, targetKey, value, dictionary);
+		} else {
+			return A2(elm$core$Dict$remove, targetKey, dictionary);
+		}
+	});
+var elm$url$Url$percentDecode = _Url_percentDecode;
+var elm$url$Url$Parser$addToParametersHelp = F2(
+	function (value, maybeList) {
+		if (maybeList.$ === 'Nothing') {
+			return elm$core$Maybe$Just(
+				_List_fromArray(
+					[value]));
+		} else {
+			var list = maybeList.a;
+			return elm$core$Maybe$Just(
+				A2(elm$core$List$cons, value, list));
+		}
+	});
+var elm$url$Url$Parser$addParam = F2(
+	function (segment, dict) {
+		var _n0 = A2(elm$core$String$split, '=', segment);
+		if ((_n0.b && _n0.b.b) && (!_n0.b.b.b)) {
+			var rawKey = _n0.a;
+			var _n1 = _n0.b;
+			var rawValue = _n1.a;
+			var _n2 = elm$url$Url$percentDecode(rawKey);
+			if (_n2.$ === 'Nothing') {
+				return dict;
+			} else {
+				var key = _n2.a;
+				var _n3 = elm$url$Url$percentDecode(rawValue);
+				if (_n3.$ === 'Nothing') {
+					return dict;
+				} else {
+					var value = _n3.a;
+					return A3(
+						elm$core$Dict$update,
+						key,
+						elm$url$Url$Parser$addToParametersHelp(value),
+						dict);
+				}
+			}
+		} else {
+			return dict;
+		}
+	});
+var elm$url$Url$Parser$prepareQuery = function (maybeQuery) {
+	if (maybeQuery.$ === 'Nothing') {
+		return elm$core$Dict$empty;
+	} else {
+		var qry = maybeQuery.a;
+		return A3(
+			elm$core$List$foldr,
+			elm$url$Url$Parser$addParam,
+			elm$core$Dict$empty,
+			A2(elm$core$String$split, '&', qry));
+	}
+};
+var elm$url$Url$Parser$parse = F2(
+	function (_n0, url) {
+		var parser = _n0.a;
+		return elm$url$Url$Parser$getFirstMatch(
+			parser(
+				A5(
+					elm$url$Url$Parser$State,
+					_List_Nil,
+					elm$url$Url$Parser$preparePath(url.path),
+					elm$url$Url$Parser$prepareQuery(url.query),
+					url.fragment,
+					elm$core$Basics$identity)));
+	});
+var author$project$Route$fromUrl = function (url) {
+	return A2(elm$url$Url$Parser$parse, author$project$Route$parser, url);
+};
+var author$project$Pomodoro$init = F3(
+	function (flags, url, key) {
+		return A2(
+			author$project$Pomodoro$changeRouteTo,
+			author$project$Route$fromUrl(url),
+			{
+				currentPage: author$project$Page$Tasks(author$project$Page$Tasks$initialModel),
+				key: key,
+				url: url
+			});
+	});
+var author$project$Page$Tasks$OnKeyPressed = function (a) {
+	return {$: 'OnKeyPressed', a: a};
+};
+var author$project$Page$Tasks$TimerMsg = function (a) {
+	return {$: 'TimerMsg', a: a};
+};
+var elm$json$Json$Decode$field = _Json_decodeField;
+var elm$json$Json$Decode$string = _Json_decodeString;
+var author$project$Page$Tasks$keyDecoder = A2(elm$json$Json$Decode$field, 'key', elm$json$Json$Decode$string);
+var author$project$Timer$Tick = function (a) {
+	return {$: 'Tick', a: a};
+};
+var elm$core$Platform$Sub$batch = _Platform_batch;
+var elm$core$Platform$Sub$none = elm$core$Platform$Sub$batch(_List_Nil);
+var elm$time$Time$Every = F2(
+	function (a, b) {
+		return {$: 'Every', a: a, b: b};
+	});
+var elm$core$Task$succeed = _Scheduler_succeed;
+var elm$time$Time$State = F2(
+	function (taggers, processes) {
+		return {processes: processes, taggers: taggers};
+	});
+var elm$time$Time$init = elm$core$Task$succeed(
+	A2(elm$time$Time$State, elm$core$Dict$empty, elm$core$Dict$empty));
 var elm$core$Dict$foldl = F3(
 	function (func, acc, dict) {
 		foldl:
@@ -5089,37 +5847,6 @@ var elm$core$Dict$merge = F6(
 	});
 var elm$core$Process$kill = _Scheduler_kill;
 var elm$core$Task$andThen = _Scheduler_andThen;
-var elm$core$Dict$get = F2(
-	function (targetKey, dict) {
-		get:
-		while (true) {
-			if (dict.$ === 'RBEmpty_elm_builtin') {
-				return elm$core$Maybe$Nothing;
-			} else {
-				var key = dict.b;
-				var value = dict.c;
-				var left = dict.d;
-				var right = dict.e;
-				var _n1 = A2(elm$core$Basics$compare, targetKey, key);
-				switch (_n1.$) {
-					case 'LT':
-						var $temp$targetKey = targetKey,
-							$temp$dict = left;
-						targetKey = $temp$targetKey;
-						dict = $temp$dict;
-						continue get;
-					case 'EQ':
-						return elm$core$Maybe$Just(value);
-					default:
-						var $temp$targetKey = targetKey,
-							$temp$dict = right;
-						targetKey = $temp$targetKey;
-						dict = $temp$dict;
-						continue get;
-				}
-			}
-		}
-	});
 var elm$time$Time$addMySub = F2(
 	function (_n0, state) {
 		var interval = _n0.a;
@@ -5242,75 +5969,6 @@ var elm$time$Time$onEffects = F3(
 					return A3(elm$time$Time$spawnHelp, router, spawnList, existingDict);
 				},
 				killTask));
-	});
-var elm$core$List$foldrHelper = F4(
-	function (fn, acc, ctr, ls) {
-		if (!ls.b) {
-			return acc;
-		} else {
-			var a = ls.a;
-			var r1 = ls.b;
-			if (!r1.b) {
-				return A2(fn, a, acc);
-			} else {
-				var b = r1.a;
-				var r2 = r1.b;
-				if (!r2.b) {
-					return A2(
-						fn,
-						a,
-						A2(fn, b, acc));
-				} else {
-					var c = r2.a;
-					var r3 = r2.b;
-					if (!r3.b) {
-						return A2(
-							fn,
-							a,
-							A2(
-								fn,
-								b,
-								A2(fn, c, acc)));
-					} else {
-						var d = r3.a;
-						var r4 = r3.b;
-						var res = (ctr > 500) ? A3(
-							elm$core$List$foldl,
-							fn,
-							acc,
-							elm$core$List$reverse(r4)) : A4(elm$core$List$foldrHelper, fn, acc, ctr + 1, r4);
-						return A2(
-							fn,
-							a,
-							A2(
-								fn,
-								b,
-								A2(
-									fn,
-									c,
-									A2(fn, d, res))));
-					}
-				}
-			}
-		}
-	});
-var elm$core$List$foldr = F3(
-	function (fn, acc, ls) {
-		return A4(elm$core$List$foldrHelper, fn, acc, 0, ls);
-	});
-var elm$core$List$map = F2(
-	function (f, xs) {
-		return A3(
-			elm$core$List$foldr,
-			F2(
-				function (x, acc) {
-					return A2(
-						elm$core$List$cons,
-						f(x),
-						acc);
-				}),
-			_List_Nil,
-			xs);
 	});
 var elm$core$Platform$sendToApp = _Platform_sendToApp;
 var elm$core$Task$map2 = F3(
@@ -5810,35 +6468,43 @@ var elm$browser$Browser$Events$on = F3(
 	});
 var elm$browser$Browser$Events$onKeyPress = A2(elm$browser$Browser$Events$on, elm$browser$Browser$Events$Document, 'keypress');
 var elm$core$Platform$Sub$map = _Platform_map;
-var author$project$Pomodoro$subscriptions = function (model) {
+var author$project$Page$Tasks$subscriptions = function (model) {
 	return elm$core$Platform$Sub$batch(
 		_List_fromArray(
 			[
 				elm$browser$Browser$Events$onKeyPress(
-				A2(elm$json$Json$Decode$map, author$project$Pomodoro$OnKeyPressed, author$project$Pomodoro$keyDecoder)),
+				A2(elm$json$Json$Decode$map, author$project$Page$Tasks$OnKeyPressed, author$project$Page$Tasks$keyDecoder)),
 				A2(
 				elm$core$Platform$Sub$map,
-				author$project$Pomodoro$TimerMsg,
+				author$project$Page$Tasks$TimerMsg,
 				author$project$Timer$subscriptions(model.timer))
 			]));
 };
-var author$project$Pomodoro$FocusResult = function (a) {
+var author$project$Pomodoro$subscriptions = function (model) {
+	var _n0 = model.currentPage;
+	var tasksModel = _n0.a;
+	return A2(
+		elm$core$Platform$Sub$map,
+		author$project$Pomodoro$TasksMsg,
+		author$project$Page$Tasks$subscriptions(tasksModel));
+};
+var author$project$Page$Tasks$FocusResult = function (a) {
 	return {$: 'FocusResult', a: a};
 };
-var author$project$Pomodoro$Task = F4(
+var author$project$Page$Tasks$Task = F4(
 	function (id, description, done, isActive) {
 		return {description: description, done: done, id: id, isActive: isActive};
 	});
-var author$project$Pomodoro$getNewTaskId = function (model) {
+var author$project$Page$Tasks$getNewTaskId = function (model) {
 	return model.lastNewId + 1;
 };
-var author$project$Pomodoro$addNewTask = function (model) {
+var author$project$Page$Tasks$addNewTask = function (model) {
 	var _n0 = model.newTask;
 	if (_n0.$ === 'Nothing') {
 		return model;
 	} else {
 		var task = _n0.a;
-		var newTaskId = author$project$Pomodoro$getNewTaskId(model);
+		var newTaskId = author$project$Page$Tasks$getNewTaskId(model);
 		var newTask = _Utils_update(
 			task,
 			{id: newTaskId});
@@ -5851,7 +6517,7 @@ var author$project$Pomodoro$addNewTask = function (model) {
 			{lastNewId: newTaskId, newTask: elm$core$Maybe$Nothing, selectedTaskId: newTaskId, tasks: newTasks});
 	}
 };
-var author$project$Pomodoro$UpdateTask = function (a) {
+var author$project$Page$Tasks$UpdateTask = function (a) {
 	return {$: 'UpdateTask', a: a};
 };
 var elm$core$Basics$neq = _Utils_notEqual;
@@ -5866,7 +6532,7 @@ var elm$core$List$filter = F2(
 			_List_Nil,
 			list);
 	});
-var author$project$Pomodoro$removeTask = F2(
+var author$project$Page$Tasks$removeTask = F2(
 	function (model, taskToRemove) {
 		var isNotRemovable = function (task) {
 			return !_Utils_eq(task.id, taskToRemove.id);
@@ -5877,13 +6543,13 @@ var author$project$Pomodoro$removeTask = F2(
 				tasks: A2(elm$core$List$filter, isNotRemovable, model.tasks)
 			});
 	});
-var author$project$Pomodoro$removeSelectedTask = F2(
+var author$project$Page$Tasks$removeSelectedTask = F2(
 	function (model, maybeSelectedTask) {
 		if (maybeSelectedTask.$ === 'Nothing') {
 			return model;
 		} else {
 			var selectedTask = maybeSelectedTask.a;
-			return selectedTask.isActive ? model : A2(author$project$Pomodoro$removeTask, model, selectedTask);
+			return selectedTask.isActive ? model : A2(author$project$Page$Tasks$removeTask, model, selectedTask);
 		}
 	});
 var elm$core$List$head = function (list) {
@@ -5895,7 +6561,7 @@ var elm$core$List$head = function (list) {
 		return elm$core$Maybe$Nothing;
 	}
 };
-var author$project$Pomodoro$getFirstTaskId = function (tasks) {
+var author$project$Page$Tasks$getFirstTaskId = function (tasks) {
 	var maybeFirstTask = elm$core$List$head(tasks);
 	if (maybeFirstTask.$ === 'Just') {
 		var firstTask = maybeFirstTask.a;
@@ -5904,7 +6570,7 @@ var author$project$Pomodoro$getFirstTaskId = function (tasks) {
 		return 0;
 	}
 };
-var author$project$Pomodoro$getNextTaskId = F2(
+var author$project$Page$Tasks$getNextTaskId = F2(
 	function (tasks, selectedTaskId) {
 		getNextTaskId:
 		while (true) {
@@ -5931,36 +6597,36 @@ var author$project$Pomodoro$getNextTaskId = F2(
 			}
 		}
 	});
-var author$project$Pomodoro$selectNextTask = function (model) {
-	var maybeNextTaskId = A2(author$project$Pomodoro$getNextTaskId, model.tasks, model.selectedTaskId);
+var author$project$Page$Tasks$selectNextTask = function (model) {
+	var maybeNextTaskId = A2(author$project$Page$Tasks$getNextTaskId, model.tasks, model.selectedTaskId);
 	var selectedTaskId = function () {
 		if (maybeNextTaskId.$ === 'Just') {
 			var id = maybeNextTaskId.a;
 			return id;
 		} else {
-			return author$project$Pomodoro$getFirstTaskId(model.tasks);
+			return author$project$Page$Tasks$getFirstTaskId(model.tasks);
 		}
 	}();
 	return _Utils_update(
 		model,
 		{selectedTaskId: selectedTaskId});
 };
-var author$project$Pomodoro$selectPreviousTask = function (model) {
+var author$project$Page$Tasks$selectPreviousTask = function (model) {
 	var reversedTaskList = elm$core$List$reverse(model.tasks);
-	var maybePreviousTaskId = A2(author$project$Pomodoro$getNextTaskId, reversedTaskList, model.selectedTaskId);
+	var maybePreviousTaskId = A2(author$project$Page$Tasks$getNextTaskId, reversedTaskList, model.selectedTaskId);
 	var selectedTaskId = function () {
 		if (maybePreviousTaskId.$ === 'Just') {
 			var id = maybePreviousTaskId.a;
 			return id;
 		} else {
-			return author$project$Pomodoro$getFirstTaskId(reversedTaskList);
+			return author$project$Page$Tasks$getFirstTaskId(reversedTaskList);
 		}
 	}();
 	return _Utils_update(
 		model,
 		{selectedTaskId: selectedTaskId});
 };
-var author$project$Pomodoro$send = function (msg) {
+var author$project$Page$Tasks$send = function (msg) {
 	return A2(
 		elm$core$Task$perform,
 		elm$core$Basics$identity,
@@ -5983,7 +6649,7 @@ var author$project$Timer$resume = function (model) {
 		return model;
 	}
 };
-var author$project$Pomodoro$resumeTimer = function (model) {
+var author$project$Page$Tasks$resumeTimer = function (model) {
 	return _Utils_Tuple2(
 		_Utils_update(
 			model,
@@ -6077,8 +6743,7 @@ var author$project$Timer$shift = function (model) {
 				author$project$Timer$getLabel(newModel)));
 	}
 };
-var elm$core$Platform$Cmd$map = _Platform_map;
-var author$project$Pomodoro$startTimer = F2(
+var author$project$Page$Tasks$startTimer = F2(
 	function (model, task) {
 		var updateActiveTask = function (aTask) {
 			return _Utils_update(
@@ -6095,7 +6760,7 @@ var author$project$Pomodoro$startTimer = F2(
 			_Utils_update(
 				model,
 				{tasks: newTasks, timer: newTimer}),
-			A2(elm$core$Platform$Cmd$map, author$project$Pomodoro$TimerMsg, timerCmd));
+			A2(elm$core$Platform$Cmd$map, author$project$Page$Tasks$TimerMsg, timerCmd));
 	});
 var author$project$Timer$stop = function (model) {
 	var _n0 = model.status;
@@ -6111,7 +6776,7 @@ var author$project$Timer$stop = function (model) {
 		return model;
 	}
 };
-var author$project$Pomodoro$stopTimer = function (model) {
+var author$project$Page$Tasks$stopTimer = function (model) {
 	return _Utils_Tuple2(
 		_Utils_update(
 			model,
@@ -6120,16 +6785,16 @@ var author$project$Pomodoro$stopTimer = function (model) {
 			}),
 		elm$core$Platform$Cmd$none);
 };
-var author$project$Pomodoro$toggleTimerForSelectedTask = F2(
+var author$project$Page$Tasks$toggleTimerForSelectedTask = F2(
 	function (model, maybeSelectedTask) {
 		if (maybeSelectedTask.$ === 'Nothing') {
 			return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 		} else {
 			var selectedTask = maybeSelectedTask.a;
-			return selectedTask.isActive ? (model.timer.isActive ? author$project$Pomodoro$stopTimer(model) : author$project$Pomodoro$resumeTimer(model)) : (model.timer.isActive ? _Utils_Tuple2(model, elm$core$Platform$Cmd$none) : A2(author$project$Pomodoro$startTimer, model, selectedTask));
+			return selectedTask.isActive ? (model.timer.isActive ? author$project$Page$Tasks$stopTimer(model) : author$project$Page$Tasks$resumeTimer(model)) : (model.timer.isActive ? _Utils_Tuple2(model, elm$core$Platform$Cmd$none) : A2(author$project$Page$Tasks$startTimer, model, selectedTask));
 		}
 	});
-var author$project$Pomodoro$processKey = F2(
+var author$project$Page$Tasks$processKey = F2(
 	function (model, key) {
 		var isSelected = function (task) {
 			return _Utils_eq(task.id, model.selectedTaskId);
@@ -6140,21 +6805,21 @@ var author$project$Pomodoro$processKey = F2(
 			case 'n':
 				return _Utils_Tuple2(
 					model,
-					author$project$Pomodoro$send(
-						author$project$Pomodoro$UpdateTask('')));
+					author$project$Page$Tasks$send(
+						author$project$Page$Tasks$UpdateTask('')));
 			case 'j':
 				return _Utils_Tuple2(
-					author$project$Pomodoro$selectNextTask(model),
+					author$project$Page$Tasks$selectNextTask(model),
 					elm$core$Platform$Cmd$none);
 			case 'k':
 				return _Utils_Tuple2(
-					author$project$Pomodoro$selectPreviousTask(model),
+					author$project$Page$Tasks$selectPreviousTask(model),
 					elm$core$Platform$Cmd$none);
 			case 'Enter':
-				return A2(author$project$Pomodoro$toggleTimerForSelectedTask, model, maybeSelectedTask);
+				return A2(author$project$Page$Tasks$toggleTimerForSelectedTask, model, maybeSelectedTask);
 			case 'x':
 				return _Utils_Tuple2(
-					A2(author$project$Pomodoro$removeSelectedTask, model, maybeSelectedTask),
+					A2(author$project$Page$Tasks$removeSelectedTask, model, maybeSelectedTask),
 					elm$core$Platform$Cmd$none);
 			default:
 				return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
@@ -6188,18 +6853,18 @@ var elm$core$Task$attempt = F2(
 							elm$core$Result$Ok),
 						task))));
 	});
-var author$project$Pomodoro$update = F2(
+var author$project$Page$Tasks$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
 			case 'SaveTask':
 				return _Utils_Tuple2(
-					author$project$Pomodoro$addNewTask(model),
+					author$project$Page$Tasks$addNewTask(model),
 					elm$core$Platform$Cmd$none);
 			case 'FocusResult':
 				return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 			case 'UpdateTask':
 				if (msg.a === '') {
-					var task = A4(author$project$Pomodoro$Task, 0, '', false, false);
+					var task = A4(author$project$Page$Tasks$Task, 0, '', false, false);
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
@@ -6208,11 +6873,11 @@ var author$project$Pomodoro$update = F2(
 							}),
 						A2(
 							elm$core$Task$attempt,
-							author$project$Pomodoro$FocusResult,
+							author$project$Page$Tasks$FocusResult,
 							elm$browser$Browser$Dom$focus('new-task-description')));
 				} else {
 					var description = msg.a;
-					var task = A4(author$project$Pomodoro$Task, 0, description, false, false);
+					var task = A4(author$project$Page$Tasks$Task, 0, description, false, false);
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
@@ -6224,12 +6889,12 @@ var author$project$Pomodoro$update = F2(
 			case 'RemoveTask':
 				var task = msg.a;
 				return _Utils_Tuple2(
-					A2(author$project$Pomodoro$removeTask, model, task),
+					A2(author$project$Page$Tasks$removeTask, model, task),
 					elm$core$Platform$Cmd$none);
 			case 'ToggleTimer':
 				var task = msg.a;
 				return A2(
-					author$project$Pomodoro$toggleTimerForSelectedTask,
+					author$project$Page$Tasks$toggleTimerForSelectedTask,
 					model,
 					elm$core$Maybe$Just(task));
 			case 'SelectTask':
@@ -6243,7 +6908,7 @@ var author$project$Pomodoro$update = F2(
 				var key = msg.a;
 				var _n1 = model.newTask;
 				if (_n1.$ === 'Nothing') {
-					return A2(author$project$Pomodoro$processKey, model, key);
+					return A2(author$project$Page$Tasks$processKey, model, key);
 				} else {
 					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 				}
@@ -6256,16 +6921,113 @@ var author$project$Pomodoro$update = F2(
 					_Utils_update(
 						model,
 						{timer: newTimer}),
-					A2(elm$core$Platform$Cmd$map, author$project$Pomodoro$TimerMsg, timerCmd));
+					A2(elm$core$Platform$Cmd$map, author$project$Page$Tasks$TimerMsg, timerCmd));
 		}
 	});
+var author$project$Pomodoro$updatePage = F2(
+	function (msg, model) {
+		var updateWith = F3(
+			function (page, pageMsg, _n1) {
+				var updatedPageModel = _n1.a;
+				var pageCmd = _n1.b;
+				return _Utils_Tuple2(
+					A2(
+						author$project$Pomodoro$setCurrentPage,
+						model,
+						page(updatedPageModel)),
+					A2(elm$core$Platform$Cmd$map, pageMsg, pageCmd));
+			});
+		var _n0 = _Utils_Tuple2(msg, model.currentPage);
+		if (_n0.a.$ === 'TasksMsg') {
+			var tasksMsg = _n0.a.a;
+			var tasksModel = _n0.b.a;
+			return A3(
+				updateWith,
+				author$project$Page$Tasks,
+				author$project$Pomodoro$TasksMsg,
+				A2(author$project$Page$Tasks$update, tasksMsg, tasksModel));
+		} else {
+			return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+		}
+	});
+var elm$browser$Browser$Navigation$pushUrl = _Browser_pushUrl;
+var elm$url$Url$addPort = F2(
+	function (maybePort, starter) {
+		if (maybePort.$ === 'Nothing') {
+			return starter;
+		} else {
+			var port_ = maybePort.a;
+			return starter + (':' + elm$core$String$fromInt(port_));
+		}
+	});
+var elm$url$Url$addPrefixed = F3(
+	function (prefix, maybeSegment, starter) {
+		if (maybeSegment.$ === 'Nothing') {
+			return starter;
+		} else {
+			var segment = maybeSegment.a;
+			return _Utils_ap(
+				starter,
+				_Utils_ap(prefix, segment));
+		}
+	});
+var elm$url$Url$toString = function (url) {
+	var http = function () {
+		var _n0 = url.protocol;
+		if (_n0.$ === 'Http') {
+			return 'http://';
+		} else {
+			return 'https://';
+		}
+	}();
+	return A3(
+		elm$url$Url$addPrefixed,
+		'#',
+		url.fragment,
+		A3(
+			elm$url$Url$addPrefixed,
+			'?',
+			url.query,
+			_Utils_ap(
+				A2(
+					elm$url$Url$addPort,
+					url.port_,
+					_Utils_ap(http, url.host)),
+				url.path)));
+};
+var author$project$Pomodoro$update = F2(
+	function (msg, model) {
+		switch (msg.$) {
+			case 'LinkClicked':
+				var urlRequest = msg.a;
+				if (urlRequest.$ === 'Internal') {
+					var url = urlRequest.a;
+					return _Utils_Tuple2(
+						model,
+						A2(
+							elm$browser$Browser$Navigation$pushUrl,
+							model.key,
+							elm$url$Url$toString(url)));
+				} else {
+					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+				}
+			case 'UrlChanged':
+				var url = msg.a;
+				return A2(
+					author$project$Pomodoro$changeRouteTo,
+					author$project$Route$fromUrl(url),
+					model);
+			default:
+				return A2(author$project$Pomodoro$updatePage, msg, model);
+		}
+	});
+var author$project$Page$Tasks$SaveTask = {$: 'SaveTask'};
 var elm$html$Html$a = _VirtualDom_node('a');
+var elm$html$Html$button = _VirtualDom_node('button');
 var elm$html$Html$div = _VirtualDom_node('div');
-var elm$html$Html$h4 = _VirtualDom_node('h4');
+var elm$html$Html$form = _VirtualDom_node('form');
 var elm$html$Html$i = _VirtualDom_node('i');
-var elm$html$Html$nav = _VirtualDom_node('nav');
-var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
-var elm$html$Html$text = elm$virtual_dom$VirtualDom$text;
+var elm$html$Html$input = _VirtualDom_node('input');
 var elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {
 		return A2(
@@ -6274,6 +7036,15 @@ var elm$html$Html$Attributes$stringProperty = F2(
 			elm$json$Json$Encode$string(string));
 	});
 var elm$html$Html$Attributes$class = elm$html$Html$Attributes$stringProperty('className');
+var elm$json$Json$Encode$bool = _Json_wrap;
+var elm$html$Html$Attributes$boolProperty = F2(
+	function (key, bool) {
+		return A2(
+			_VirtualDom_property,
+			key,
+			elm$json$Json$Encode$bool(bool));
+	});
+var elm$html$Html$Attributes$disabled = elm$html$Html$Attributes$boolProperty('disabled');
 var elm$html$Html$Attributes$href = function (url) {
 	return A2(
 		elm$html$Html$Attributes$stringProperty,
@@ -6281,6 +7052,9 @@ var elm$html$Html$Attributes$href = function (url) {
 		_VirtualDom_noJavaScriptUri(url));
 };
 var elm$html$Html$Attributes$id = elm$html$Html$Attributes$stringProperty('id');
+var elm$html$Html$Attributes$placeholder = elm$html$Html$Attributes$stringProperty('placeholder');
+var elm$html$Html$Attributes$type_ = elm$html$Html$Attributes$stringProperty('type');
+var elm$html$Html$Attributes$value = elm$html$Html$Attributes$stringProperty('value');
 var elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 'Normal', a: a};
 };
@@ -6298,93 +7072,6 @@ var elm$html$Html$Events$onClick = function (msg) {
 		'click',
 		elm$json$Json$Decode$succeed(msg));
 };
-var author$project$Pomodoro$viewHeader = A2(
-	elm$html$Html$nav,
-	_List_fromArray(
-		[
-			elm$html$Html$Attributes$class('header')
-		]),
-	_List_fromArray(
-		[
-			A2(
-			elm$html$Html$div,
-			_List_fromArray(
-				[
-					elm$html$Html$Attributes$class('container')
-				]),
-			_List_fromArray(
-				[
-					A2(
-					elm$html$Html$div,
-					_List_fromArray(
-						[
-							elm$html$Html$Attributes$class('row')
-						]),
-					_List_fromArray(
-						[
-							A2(
-							elm$html$Html$div,
-							_List_fromArray(
-								[
-									elm$html$Html$Attributes$class('col-10 d-flex align-items-center')
-								]),
-							_List_fromArray(
-								[
-									A2(
-									elm$html$Html$h4,
-									_List_Nil,
-									_List_fromArray(
-										[
-											elm$html$Html$text('Conductor')
-										]))
-								])),
-							A2(
-							elm$html$Html$div,
-							_List_fromArray(
-								[
-									elm$html$Html$Attributes$class('col-2 d-flex align-items-center justify-content-end')
-								]),
-							_List_fromArray(
-								[
-									A2(
-									elm$html$Html$a,
-									_List_fromArray(
-										[
-											elm$html$Html$Attributes$href('#'),
-											elm$html$Html$Attributes$id('new-task-btn'),
-											elm$html$Html$Events$onClick(
-											author$project$Pomodoro$UpdateTask(''))
-										]),
-									_List_fromArray(
-										[
-											A2(
-											elm$html$Html$i,
-											_List_fromArray(
-												[
-													elm$html$Html$Attributes$class('fa fa-plus fa-2x')
-												]),
-											_List_Nil)
-										]))
-								]))
-						]))
-				]))
-		]));
-var author$project$Pomodoro$SaveTask = {$: 'SaveTask'};
-var elm$html$Html$button = _VirtualDom_node('button');
-var elm$html$Html$form = _VirtualDom_node('form');
-var elm$html$Html$input = _VirtualDom_node('input');
-var elm$json$Json$Encode$bool = _Json_wrap;
-var elm$html$Html$Attributes$boolProperty = F2(
-	function (key, bool) {
-		return A2(
-			_VirtualDom_property,
-			key,
-			elm$json$Json$Encode$bool(bool));
-	});
-var elm$html$Html$Attributes$disabled = elm$html$Html$Attributes$boolProperty('disabled');
-var elm$html$Html$Attributes$placeholder = elm$html$Html$Attributes$stringProperty('placeholder');
-var elm$html$Html$Attributes$type_ = elm$html$Html$Attributes$stringProperty('type');
-var elm$html$Html$Attributes$value = elm$html$Html$Attributes$stringProperty('value');
 var elm$html$Html$Events$alwaysStop = function (x) {
 	return _Utils_Tuple2(x, true);
 };
@@ -6438,10 +7125,37 @@ var elm$html$Html$Events$onSubmit = function (msg) {
 			elm$html$Html$Events$alwaysPreventDefault,
 			elm$json$Json$Decode$succeed(msg)));
 };
-var author$project$Pomodoro$viewNewTask = function (model) {
+var author$project$Page$Tasks$viewNewTask = function (model) {
 	var _n0 = model.newTask;
 	if (_n0.$ === 'Nothing') {
-		return A2(elm$html$Html$div, _List_Nil, _List_Nil);
+		return A2(
+			elm$html$Html$div,
+			_List_fromArray(
+				[
+					elm$html$Html$Attributes$class('new-task d-flex justify-content-center')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					elm$html$Html$a,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$href('#'),
+							elm$html$Html$Attributes$id('new-task-btn'),
+							elm$html$Html$Events$onClick(
+							author$project$Page$Tasks$UpdateTask(''))
+						]),
+					_List_fromArray(
+						[
+							A2(
+							elm$html$Html$i,
+							_List_fromArray(
+								[
+									elm$html$Html$Attributes$class('fa fa-plus')
+								]),
+							_List_Nil)
+						]))
+				]));
 	} else {
 		var task = _n0.a;
 		return A2(
@@ -6457,7 +7171,7 @@ var author$project$Pomodoro$viewNewTask = function (model) {
 					_List_fromArray(
 						[
 							elm$html$Html$Attributes$class('d-flex'),
-							elm$html$Html$Events$onSubmit(author$project$Pomodoro$SaveTask)
+							elm$html$Html$Events$onSubmit(author$project$Page$Tasks$SaveTask)
 						]),
 					_List_fromArray(
 						[
@@ -6470,7 +7184,7 @@ var author$project$Pomodoro$viewNewTask = function (model) {
 									elm$html$Html$Attributes$id('new-task-description'),
 									elm$html$Html$Attributes$placeholder('Add a task...'),
 									elm$html$Html$Attributes$value(task.description),
-									elm$html$Html$Events$onInput(author$project$Pomodoro$UpdateTask)
+									elm$html$Html$Events$onInput(author$project$Page$Tasks$UpdateTask)
 								]),
 							_List_Nil),
 							A2(
@@ -6495,23 +7209,23 @@ var author$project$Pomodoro$viewNewTask = function (model) {
 				]));
 	}
 };
-var author$project$Pomodoro$SelectTask = function (a) {
+var author$project$Page$Tasks$SelectTask = function (a) {
 	return {$: 'SelectTask', a: a};
 };
-var author$project$Pomodoro$ToggleTimer = function (a) {
+var author$project$Page$Tasks$ToggleTimer = function (a) {
 	return {$: 'ToggleTimer', a: a};
 };
-var author$project$Pomodoro$RemoveTask = function (a) {
+var author$project$Page$Tasks$RemoveTask = function (a) {
 	return {$: 'RemoveTask', a: a};
 };
-var author$project$Pomodoro$viewRemoveTaskButton = function (task) {
+var author$project$Page$Tasks$viewRemoveTaskButton = function (task) {
 	return A2(
 		elm$html$Html$button,
 		_List_fromArray(
 			[
 				elm$html$Html$Attributes$class('btn remove-task-btn'),
 				elm$html$Html$Events$onClick(
-				author$project$Pomodoro$RemoveTask(task))
+				author$project$Page$Tasks$RemoveTask(task))
 			]),
 		_List_fromArray(
 			[
@@ -6524,14 +7238,14 @@ var author$project$Pomodoro$viewRemoveTaskButton = function (task) {
 				_List_Nil)
 			]));
 };
-var author$project$Pomodoro$viewStartTaskButton = function (task) {
+var author$project$Page$Tasks$viewStartTaskButton = function (task) {
 	return A2(
 		elm$html$Html$button,
 		_List_fromArray(
 			[
 				elm$html$Html$Attributes$class('btn start-task-btn'),
 				elm$html$Html$Events$onClick(
-				author$project$Pomodoro$ToggleTimer(task))
+				author$project$Page$Tasks$ToggleTimer(task))
 			]),
 		_List_fromArray(
 			[
@@ -6544,14 +7258,14 @@ var author$project$Pomodoro$viewStartTaskButton = function (task) {
 				_List_Nil)
 			]));
 };
-var author$project$Pomodoro$viewStopTaskButton = function (task) {
+var author$project$Page$Tasks$viewStopTaskButton = function (task) {
 	return A2(
 		elm$html$Html$button,
 		_List_fromArray(
 			[
 				elm$html$Html$Attributes$class('btn stop-task-btn'),
 				elm$html$Html$Events$onClick(
-				author$project$Pomodoro$ToggleTimer(task))
+				author$project$Page$Tasks$ToggleTimer(task))
 			]),
 		_List_fromArray(
 			[
@@ -6564,21 +7278,21 @@ var author$project$Pomodoro$viewStopTaskButton = function (task) {
 				_List_Nil)
 			]));
 };
-var author$project$Pomodoro$viewTaskActions = F2(
+var author$project$Page$Tasks$viewTaskActions = F2(
 	function (model, task) {
 		var buttons = task.isActive ? (model.timer.isActive ? _List_fromArray(
 			[
-				author$project$Pomodoro$viewStopTaskButton(task)
+				author$project$Page$Tasks$viewStopTaskButton(task)
 			]) : _List_fromArray(
 			[
-				author$project$Pomodoro$viewStartTaskButton(task)
+				author$project$Page$Tasks$viewStartTaskButton(task)
 			])) : (model.timer.isActive ? _List_fromArray(
 			[
-				author$project$Pomodoro$viewRemoveTaskButton(task)
+				author$project$Page$Tasks$viewRemoveTaskButton(task)
 			]) : _List_fromArray(
 			[
-				author$project$Pomodoro$viewStartTaskButton(task),
-				author$project$Pomodoro$viewRemoveTaskButton(task)
+				author$project$Page$Tasks$viewStartTaskButton(task),
+				author$project$Page$Tasks$viewRemoveTaskButton(task)
 			]));
 		return A2(
 			elm$html$Html$div,
@@ -6589,6 +7303,8 @@ var author$project$Pomodoro$viewTaskActions = F2(
 			buttons);
 	});
 var elm$html$Html$li = _VirtualDom_node('li');
+var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
+var elm$html$Html$text = elm$virtual_dom$VirtualDom$text;
 var elm$core$Tuple$second = function (_n0) {
 	var y = _n0.b;
 	return y;
@@ -6609,7 +7325,7 @@ var elm$html$Html$Events$onDoubleClick = function (msg) {
 		'dblclick',
 		elm$json$Json$Decode$succeed(msg));
 };
-var author$project$Pomodoro$viewTask = F2(
+var author$project$Page$Tasks$viewTask = F2(
 	function (model, task) {
 		return A2(
 			elm$html$Html$li,
@@ -6633,19 +7349,19 @@ var author$project$Pomodoro$viewTask = F2(
 						[
 							elm$html$Html$Attributes$class('desc flex-fill'),
 							elm$html$Html$Events$onDoubleClick(
-							author$project$Pomodoro$ToggleTimer(task)),
+							author$project$Page$Tasks$ToggleTimer(task)),
 							elm$html$Html$Events$onClick(
-							author$project$Pomodoro$SelectTask(task))
+							author$project$Page$Tasks$SelectTask(task))
 						]),
 					_List_fromArray(
 						[
 							elm$html$Html$text(task.description)
 						])),
-					A2(author$project$Pomodoro$viewTaskActions, model, task)
+					A2(author$project$Page$Tasks$viewTaskActions, model, task)
 				]));
 	});
 var elm$html$Html$ul = _VirtualDom_node('ul');
-var author$project$Pomodoro$viewTaskList = function (model) {
+var author$project$Page$Tasks$viewTaskList = function (model) {
 	return A2(
 		elm$html$Html$ul,
 		_List_fromArray(
@@ -6654,7 +7370,7 @@ var author$project$Pomodoro$viewTaskList = function (model) {
 			]),
 		A2(
 			elm$core$List$map,
-			author$project$Pomodoro$viewTask(model),
+			author$project$Page$Tasks$viewTask(model),
 			model.tasks));
 };
 var author$project$Timer$viewTimerClassNames = function (model) {
@@ -6851,7 +7567,7 @@ var author$project$Timer$view = function (model) {
 };
 var elm$virtual_dom$VirtualDom$map = _VirtualDom_map;
 var elm$html$Html$map = elm$virtual_dom$VirtualDom$map;
-var author$project$Pomodoro$view = function (model) {
+var author$project$Page$Tasks$view = function (model) {
 	return A2(
 		elm$html$Html$div,
 		_List_fromArray(
@@ -6860,17 +7576,46 @@ var author$project$Pomodoro$view = function (model) {
 			]),
 		_List_fromArray(
 			[
-				author$project$Pomodoro$viewHeader,
 				A2(
 				elm$html$Html$map,
-				author$project$Pomodoro$TimerMsg,
+				author$project$Page$Tasks$TimerMsg,
 				author$project$Timer$view(model.timer)),
-				author$project$Pomodoro$viewTaskList(model),
-				author$project$Pomodoro$viewNewTask(model)
+				author$project$Page$Tasks$viewTaskList(model),
+				author$project$Page$Tasks$viewNewTask(model)
 			]));
 };
-var elm$browser$Browser$element = _Browser_element;
-var author$project$Pomodoro$main = elm$browser$Browser$element(
-	{init: author$project$Pomodoro$init, subscriptions: author$project$Pomodoro$subscriptions, update: author$project$Pomodoro$update, view: author$project$Pomodoro$view});
+var author$project$Pomodoro$viewPage = function (model) {
+	var show = F3(
+		function (pageView, pageModel, pageMsg) {
+			return A2(
+				elm$html$Html$map,
+				pageMsg,
+				pageView(pageModel));
+		});
+	var _n0 = model.currentPage;
+	var tasksModel = _n0.a;
+	return A3(show, author$project$Page$Tasks$view, tasksModel, author$project$Pomodoro$TasksMsg);
+};
+var author$project$Pomodoro$view = function (model) {
+	return {
+		body: _List_fromArray(
+			[
+				A2(
+				elm$html$Html$div,
+				_List_fromArray(
+					[
+						elm$html$Html$Attributes$class('app')
+					]),
+				_List_fromArray(
+					[
+						author$project$Pomodoro$viewPage(model)
+					]))
+			]),
+		title: 'Conductor'
+	};
+};
+var elm$browser$Browser$application = _Browser_application;
+var author$project$Pomodoro$main = elm$browser$Browser$application(
+	{init: author$project$Pomodoro$init, onUrlChange: author$project$Pomodoro$UrlChanged, onUrlRequest: author$project$Pomodoro$LinkClicked, subscriptions: author$project$Pomodoro$subscriptions, update: author$project$Pomodoro$update, view: author$project$Pomodoro$view});
 _Platform_export({'Pomodoro':{'init':author$project$Pomodoro$main(
 	elm$json$Json$Decode$succeed(_Utils_Tuple0))(0)}});}(this));

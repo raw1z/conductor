@@ -50,7 +50,6 @@ let loadData = () => {
 
 window.onload = () => {
   let app = Elm.Pomodoro.init({
-    node: document.getElementById("app")
   })
 
   app.ports.notify.subscribe(notify)
