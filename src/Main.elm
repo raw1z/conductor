@@ -1,18 +1,12 @@
 module Pomodoro exposing (main)
 
 import Browser
-import Browser.Dom exposing (focus)
-import Browser.Events exposing (onKeyDown, onKeyPress, onKeyUp)
 import Browser.Navigation as Nav
 import Html exposing (..)
 import Html.Attributes exposing (class, classList, disabled, href, id, placeholder, src, type_, value)
-import Html.Events exposing (onClick, onDoubleClick, onInput, onSubmit)
-import Json.Decode exposing (Decoder, field, map, string)
 import Page exposing (Page)
 import Page.Tasks as Tasks
 import Route exposing (Route)
-import Task
-import Timer
 import Url exposing (Url)
 
 

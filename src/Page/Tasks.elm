@@ -2,9 +2,9 @@ port module Page.Tasks exposing (Model, Msg, init, initialModel, subscriptions, 
 
 import Browser
 import Browser.Dom exposing (focus)
-import Browser.Events exposing (onKeyDown, onKeyPress, onKeyUp)
+import Browser.Events exposing (onKeyPress)
 import Html exposing (..)
-import Html.Attributes exposing (class, classList, disabled, href, id, placeholder, src, type_, value)
+import Html.Attributes exposing (class, classList, disabled, href, id, placeholder, type_, value)
 import Html.Events exposing (onClick, onDoubleClick, onInput, onSubmit)
 import Json.Decode exposing (Decoder, field, map, string)
 import Task
