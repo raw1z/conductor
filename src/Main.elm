@@ -7,9 +7,9 @@ import Html exposing (..)
 import Html.Attributes exposing (class, disabled, href, id, placeholder, src, type_, value)
 import Html.Events exposing (onClick, onDoubleClick, onInput, onSubmit)
 import Json.Decode exposing (Decoder, field, map, string)
-import ProgressRing
 import Task
 import Time
+import Timer
 
 
 port notify : String -> Cmd msg
@@ -23,21 +23,7 @@ type alias Task =
     { id : Id
     , description : String
     , done : Bool
-    }
-
-
-type TimerStatus
-    = Work Int
-    | Pause Int
-    | LongPause
-    | Inactive
-
-
-type alias Timer =
-    { task : Task
-    , initialValue : Int
-    , timeout : Int
-    , status : TimerStatus
+    , active : Bool
     }
 
 
@@ -46,23 +32,8 @@ type alias Model =
     , newTask : Maybe Task
     , lastNewId : Id
     , selectedTaskId : Id
-    , timer : Maybe Timer
+    , timer : Timer.Model
     }
-
-
-workTimeout : Int
-workTimeout =
-    1500
-
-
-pauseTimeout : Int
-pauseTimeout =
-    300
-
-
-longPauseTimeout : Int
-longPauseTimeout =
-    1200
 
 
 initialModel : Model
@@ -172,31 +143,12 @@ isTimerOn model =
             False
 
 
-isActiveTask : Model -> Task -> Bool
-isActiveTask model task =
-    case model.timer of
-        Just timer ->
-            case timer.status of
-                Work _ ->
-                    if timer.task.id == task.id then
-                        True
-
-                    else
-                        False
-
-                _ ->
-                    False
-
-        Nothing ->
-            False
-
-
 viewTaskActions : Model -> Task -> Html Msg
 viewTaskActions model task =
     let
         buttons =
             if isTimerOn model then
-                if isActiveTask model task then
+                if task.active then
                     viewActiveTaskActions task
 
                 else
@@ -237,96 +189,11 @@ viewTaskList model =
     ul [ class "tasks" ] (List.map (viewTask model) model.tasks)
 
 
-formatMinutesOrSeconds : Int -> String
-formatMinutesOrSeconds value =
-    String.padLeft 2 '0' (String.fromInt value)
-
-
-viewTimerProgress : Timer -> Html Msg
-viewTimerProgress timer =
-    let
-        progress =
-            case timer.status of
-                Inactive ->
-                    0.0
-
-                _ ->
-                    toFloat (timer.initialValue - timer.timeout) / toFloat timer.initialValue
-    in
-    div [ class "timer-progress" ]
-        [ div [ class "timer-progress-ring" ]
-            [ ProgressRing.viewProgress 150 6 progress ]
-        , viewTimerTimeout timer
-        ]
-
-
-viewTimerTimeout : Timer -> Html Msg
-viewTimerTimeout timer =
-    let
-        minutes =
-            timer.timeout // 60
-
-        seconds =
-            timer.timeout - (minutes * 60)
-    in
-    h1 [ class "timeout" ]
-        [ text (formatMinutesOrSeconds minutes)
-        , text ":"
-        , text (formatMinutesOrSeconds seconds)
-        ]
-
-
-viewTimerClassNames : Timer -> String
-viewTimerClassNames timer =
-    case timer.status of
-        Work _ ->
-            "timer timer-work"
-
-        Pause _ ->
-            "timer timer-pause"
-
-        LongPause ->
-            "timer timer-long-pause"
-
-        Inactive ->
-            "timer timer-inactive"
-
-
-viewTimerDescription : Timer -> Html Msg
-viewTimerDescription timer =
-    case timer.status of
-        Work _ ->
-            text timer.task.description
-
-        Pause _ ->
-            text "Take a breathe..."
-
-        LongPause ->
-            text "Take some rest..."
-
-        Inactive ->
-            text "Ready"
-
-
-viewTimer : Maybe Timer -> Html Msg
-viewTimer maybeTimer =
-    case maybeTimer of
-        Just timer ->
-            div [ class (viewTimerClassNames timer) ]
-                [ viewTimerProgress timer
-                , div [ class "task-description" ]
-                    [ viewTimerDescription timer ]
-                ]
-
-        Nothing ->
-            div [] []
-
-
 view : Model -> Html Msg
 view model =
     div [ class "app" ]
         [ viewHeader
-        , viewTimer model.timer
+        , Timer.view model.timer
         , viewTaskList model
         , viewNewTask model
         ]
@@ -383,52 +250,16 @@ removeTask model taskToRemove =
     { model | tasks = List.filter isNotRemovable model.tasks }
 
 
-createTimer : Task -> Timer
-createTimer task =
-    Timer task workTimeout workTimeout (Work 1)
-
-
-updateExistingTimer : Timer -> Task -> Timer
-updateExistingTimer timer task =
-    case timer.status of
-        Pause count ->
-            { timer
-                | status = Work (count + 1)
-                , initialValue = workTimeout
-                , timeout = workTimeout
-                , task = task
-            }
-
-        LongPause ->
-            { timer
-                | status = Work 1
-                , initialValue = workTimeout
-                , timeout = workTimeout
-                , task = task
-            }
-
-        Inactive ->
-            { timer
-                | status = Work 1
-                , initialValue = workTimeout
-                , timeout = workTimeout
-                , task = task
-            }
-
-        _ ->
-            timer
-
-
 updateTimer : Model -> Task -> Model
 updateTimer model task =
     let
         newTimer =
             case model.timer of
                 Nothing ->
-                    createTimer task
+                    Timer.start model.timer task.description
 
                 Just timer ->
-                    updateExistingTimer timer task
+                    Timer.shift timer task.description
     in
     { model | timer = Just newTimer }
 
