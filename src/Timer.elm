@@ -1,9 +1,12 @@
-module Timer exposing (Model, Msg, init, setActive, shift, subscriptions, update, view)
+port module Timer exposing (Model, Msg, init, setActive, shift, subscriptions, update, view)
 
 import Html exposing (..)
 import Html.Attributes exposing (class)
 import ProgressRing
 import Time
+
+
+port notify : String -> Cmd msg
 
 
 type Statuts
@@ -31,54 +34,29 @@ init =
 -- Utility methods
 
 
+getLabel : Model -> String
+getLabel model =
+    if model.isActive then
+        case model.status of
+            Work _ ->
+                model.label
+
+            Pause _ ->
+                "Take a breathe..."
+
+            LongPause ->
+                "Take some rest..."
+
+            Ready _ ->
+                "Ready to go"
+
+    else
+        "Ready to go"
+
+
 setActive : Model -> Bool -> Model
 setActive model isActive =
     { model | isActive = isActive }
-
-
-shift : Model -> String -> Model
-shift model label =
-    case model.status of
-        Ready count ->
-            { model
-                | status = Work count
-                , initialValue = 1500
-                , timeout = 0
-                , label = label
-                , isActive = True
-            }
-
-        Work 4 ->
-            { model
-                | status = LongPause
-                , initialValue = 1200
-                , timeout = 0
-                , isActive = True
-            }
-
-        Work count ->
-            { model
-                | status = Pause count
-                , initialValue = 300
-                , timeout = 0
-                , isActive = True
-            }
-
-        Pause count ->
-            { model
-                | status = Ready (count + 1)
-                , initialValue = 0
-                , timeout = 0
-                , isActive = False
-            }
-
-        LongPause ->
-            { model
-                | status = Ready 1
-                , initialValue = 0
-                , timeout = 0
-                , isActive = False
-            }
 
 
 
@@ -146,32 +124,12 @@ viewTimerClassNames model =
         "timer timer-inactive"
 
 
-viewTimerLabel : Model -> Html Msg
-viewTimerLabel model =
-    if model.isActive then
-        case model.status of
-            Work _ ->
-                text model.label
-
-            Pause _ ->
-                text "Take a breathe..."
-
-            LongPause ->
-                text "Take some rest..."
-
-            Ready _ ->
-                text "Ready to go"
-
-    else
-        text "Ready to go"
-
-
 view : Model -> Html Msg
 view model =
     div [ class (viewTimerClassNames model) ]
         [ viewTimerProgress model
         , div [ class "task-description" ]
-            [ viewTimerLabel model ]
+            [ text <| getLabel model ]
         ]
 
 
@@ -192,16 +150,73 @@ type Msg
     = Tick Time.Posix
 
 
+shiftModel : Model -> String -> Model
+shiftModel model label =
+    case model.status of
+        Ready count ->
+            { model
+                | status = Work count
+                , initialValue = 1500
+                , timeout = 0
+                , label = label
+                , isActive = True
+            }
+
+        Work 4 ->
+            { model
+                | status = LongPause
+                , initialValue = 300
+                , timeout = 0
+                , isActive = True
+            }
+
+        Work count ->
+            { model
+                | status = Pause count
+                , initialValue = 1200
+                , timeout = 0
+                , isActive = True
+            }
+
+        Pause count ->
+            { model
+                | status = Ready (count + 1)
+                , initialValue = 0
+                , timeout = 0
+                , isActive = False
+            }
+
+        LongPause ->
+            { model
+                | status = Ready 1
+                , initialValue = 0
+                , timeout = 0
+                , isActive = False
+            }
+
+
+shift : Model -> String -> ( Model, Cmd Msg )
+shift model label =
+    let
+        newModel =
+            shiftModel model label
+    in
+    case model.status of
+        Ready _ ->
+            ( newModel, Cmd.none )
+
+        _ ->
+            ( newModel
+            , notify <| getLabel newModel
+            )
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Tick _ ->
             if model.timeout == model.initialValue then
-                let
-                    newModel =
-                        shift model model.label
-                in
-                ( newModel, Cmd.none )
+                shift model model.label
 
             else
                 ( { model | timeout = model.timeout + 1 }

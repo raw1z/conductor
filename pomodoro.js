@@ -6017,6 +6017,25 @@ var author$project$Pomodoro$processKey = F2(
 				return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 		}
 	});
+var author$project$Timer$getLabel = function (model) {
+	if (model.isActive) {
+		var _n0 = model.status;
+		switch (_n0.$) {
+			case 'Work':
+				return model.label;
+			case 'Pause':
+				return 'Take a breathe...';
+			case 'LongPause':
+				return 'Take some rest...';
+			default:
+				return 'Ready to go';
+		}
+	} else {
+		return 'Ready to go';
+	}
+};
+var elm$json$Json$Encode$string = _Json_wrap;
+var author$project$Timer$notify = _Platform_outgoingPort('notify', elm$json$Json$Encode$string);
 var author$project$Timer$LongPause = {$: 'LongPause'};
 var author$project$Timer$Pause = function (a) {
 	return {$: 'Pause', a: a};
@@ -6024,7 +6043,7 @@ var author$project$Timer$Pause = function (a) {
 var author$project$Timer$Work = function (a) {
 	return {$: 'Work', a: a};
 };
-var author$project$Timer$shift = F2(
+var author$project$Timer$shiftModel = F2(
 	function (model, label) {
 		var _n0 = model.status;
 		switch (_n0.$) {
@@ -6043,13 +6062,13 @@ var author$project$Timer$shift = F2(
 				if (_n0.a === 4) {
 					return _Utils_update(
 						model,
-						{initialValue: 1200, isActive: true, status: author$project$Timer$LongPause, timeout: 0});
+						{initialValue: 300, isActive: true, status: author$project$Timer$LongPause, timeout: 0});
 				} else {
 					var count = _n0.a;
 					return _Utils_update(
 						model,
 						{
-							initialValue: 300,
+							initialValue: 1200,
 							isActive: true,
 							status: author$project$Timer$Pause(count),
 							timeout: 0
@@ -6076,13 +6095,30 @@ var author$project$Timer$shift = F2(
 					});
 		}
 	});
+var author$project$Timer$shift = F2(
+	function (model, label) {
+		var newModel = A2(author$project$Timer$shiftModel, model, label);
+		var _n0 = model.status;
+		if (_n0.$ === 'Ready') {
+			return _Utils_Tuple2(newModel, elm$core$Platform$Cmd$none);
+		} else {
+			return _Utils_Tuple2(
+				newModel,
+				author$project$Timer$notify(
+					author$project$Timer$getLabel(newModel)));
+		}
+	});
+var elm$core$Platform$Cmd$map = _Platform_map;
 var author$project$Pomodoro$updateTimer = F2(
 	function (model, task) {
-		return _Utils_update(
-			model,
-			{
-				timer: A2(author$project$Timer$shift, model.timer, task.description)
-			});
+		var _n0 = A2(author$project$Timer$shift, model.timer, task.description);
+		var newTimer = _n0.a;
+		var timerCmd = _n0.b;
+		return _Utils_Tuple2(
+			_Utils_update(
+				model,
+				{timer: newTimer}),
+			A2(elm$core$Platform$Cmd$map, author$project$Pomodoro$TimerMsg, timerCmd));
 	});
 var author$project$Timer$setActive = F2(
 	function (model, isActive) {
@@ -6092,19 +6128,13 @@ var author$project$Timer$setActive = F2(
 	});
 var author$project$Timer$update = F2(
 	function (msg, model) {
-		if (_Utils_eq(model.timeout, model.initialValue)) {
-			var newModel = A2(author$project$Timer$shift, model, model.label);
-			return _Utils_Tuple2(newModel, elm$core$Platform$Cmd$none);
-		} else {
-			return _Utils_Tuple2(
-				_Utils_update(
-					model,
-					{timeout: model.timeout + 1}),
-				elm$core$Platform$Cmd$none);
-		}
+		return _Utils_eq(model.timeout, model.initialValue) ? A2(author$project$Timer$shift, model, model.label) : _Utils_Tuple2(
+			_Utils_update(
+				model,
+				{timeout: model.timeout + 1}),
+			elm$core$Platform$Cmd$none);
 	});
 var elm$browser$Browser$Dom$focus = _Browser_call('focus');
-var elm$core$Platform$Cmd$map = _Platform_map;
 var elm$core$Task$onError = _Scheduler_onError;
 var elm$core$Task$attempt = F2(
 	function (resultToMessage, task) {
@@ -6164,9 +6194,7 @@ var author$project$Pomodoro$update = F2(
 					elm$core$Platform$Cmd$none);
 			case 'UpdateTimer':
 				var task = msg.a;
-				return _Utils_Tuple2(
-					A2(author$project$Pomodoro$updateTimer, model, task),
-					elm$core$Platform$Cmd$none);
+				return A2(author$project$Pomodoro$updateTimer, model, task);
 			case 'SelectTask':
 				var task = msg.a;
 				return _Utils_Tuple2(
@@ -6210,7 +6238,6 @@ var elm$html$Html$i = _VirtualDom_node('i');
 var elm$html$Html$nav = _VirtualDom_node('nav');
 var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var elm$html$Html$text = elm$virtual_dom$VirtualDom$text;
-var elm$json$Json$Encode$string = _Json_wrap;
 var elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {
 		return A2(
@@ -6592,23 +6619,6 @@ var author$project$Timer$viewTimerClassNames = function (model) {
 		return 'timer timer-inactive';
 	}
 };
-var author$project$Timer$viewTimerLabel = function (model) {
-	if (model.isActive) {
-		var _n0 = model.status;
-		switch (_n0.$) {
-			case 'Work':
-				return elm$html$Html$text(model.label);
-			case 'Pause':
-				return elm$html$Html$text('Take a breathe...');
-			case 'LongPause':
-				return elm$html$Html$text('Take some rest...');
-			default:
-				return elm$html$Html$text('Ready to go');
-		}
-	} else {
-		return elm$html$Html$text('Ready to go');
-	}
-};
 var elm$core$Basics$pi = _Basics_pi;
 var elm$core$Basics$round = _Basics_round;
 var elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
@@ -6779,7 +6789,8 @@ var author$project$Timer$view = function (model) {
 					]),
 				_List_fromArray(
 					[
-						author$project$Timer$viewTimerLabel(model)
+						elm$html$Html$text(
+						author$project$Timer$getLabel(model))
 					]))
 			]));
 };

@@ -1,4 +1,4 @@
-port module Pomodoro exposing (main)
+module Pomodoro exposing (main)
 
 import Browser
 import Browser.Dom exposing (focus)
@@ -9,9 +9,6 @@ import Html.Events exposing (onClick, onDoubleClick, onInput, onSubmit)
 import Json.Decode exposing (Decoder, field, map, string)
 import Task
 import Timer
-
-
-port notify : String -> Cmd msg
 
 
 type alias Id =
@@ -239,11 +236,15 @@ removeTask model taskToRemove =
     { model | tasks = List.filter isNotRemovable model.tasks }
 
 
-updateTimer : Model -> Task -> Model
+updateTimer : Model -> Task -> ( Model, Cmd Msg )
 updateTimer model task =
-    { model
-        | timer = Timer.shift model.timer task.description
-    }
+    let
+        ( newTimer, timerCmd ) =
+            Timer.shift model.timer task.description
+    in
+    ( { model | timer = newTimer }
+    , Cmd.map TimerMsg timerCmd
+    )
 
 
 send : Msg -> Cmd Msg
@@ -414,7 +415,7 @@ update msg model =
             ( removeTask model task, Cmd.none )
 
         UpdateTimer task ->
-            ( updateTimer model task, Cmd.none )
+            updateTimer model task
 
         SelectTask task ->
             ( { model | selectedTaskId = task.id }, Cmd.none )
