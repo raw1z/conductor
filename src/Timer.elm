@@ -184,7 +184,7 @@ shiftModel model =
         Work 4 ->
             { model
                 | status = LongPause
-                , initialValue = 300
+                , initialValue = 1200
                 , timeout = 0
                 , isActive = True
             }
@@ -192,7 +192,7 @@ shiftModel model =
         Work count ->
             { model
                 | status = Pause count
-                , initialValue = 1200
+                , initialValue = 300
                 , timeout = 0
                 , isActive = True
             }
